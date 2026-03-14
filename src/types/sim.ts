@@ -42,14 +42,3 @@ export type SelectedObjectInfo = {
   type: SimObjectType;
 };
 
-export type TimelineEventType = "info" | "maneuver" | "comms";
-
-export type TimelineEvent = {
-  id: string;
-  label: string;
-  time: number;
-  relatedObjectId: string | null;
-  relatedObjectType: SimObjectType | null;
-  type: TimelineEventType;
-};
-

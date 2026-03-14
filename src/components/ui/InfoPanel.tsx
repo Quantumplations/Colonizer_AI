@@ -1,8 +1,14 @@
 import { useSimStore } from "../../store/simStore";
-import { formatMissionElapsedTime, formatNormalizedTime } from "../../lib/time";
+import {
+  formatMissionDurationSummary,
+  formatMissionElapsedTime,
+  formatNormalizedTime,
+} from "../../lib/time";
 import { getObjectDisplayName, getSelectedObjectDetails } from "../../lib/sceneLookup";
-import { SATELLITES } from "../../data";
+import { MISSION_TIMELINE_CONFIG, SATELLITES } from "../../data";
 import { getSatelliteOrbitState } from "../../lib/orbit";
+import { getCurrentMissionSnapshot } from "../../lib/missionTimeline";
+import { formatSelectionDebug } from "../../lib/selection";
 
 function Metric({
   label,
@@ -31,10 +37,12 @@ function InfoPanel() {
   const showLabels = useSimStore((state) => state.showLabels);
   const toggleLayer = useSimStore((state) => state.toggleLayer);
   const hoveredObjectId = useSimStore((state) => state.hoveredObjectId);
+  const hoveredObjectType = useSimStore((state) => state.hoveredObjectType);
   const details = getSelectedObjectDetails(
     { id: selectedObjectId, type: selectedObjectType },
     simTime,
   );
+  const snapshot = getCurrentMissionSnapshot(simTime);
   const firstSat = SATELLITES[0];
   const firstSatPos = firstSat
     ? getSatelliteOrbitState(simTime, firstSat.orbit).position
@@ -58,9 +66,53 @@ function InfoPanel() {
 
       <div className="space-y-3 rounded border border-slate-800 bg-slate-900/60 p-3">
         <Metric label="Normalized Time" value={formatNormalizedTime(simTime)} />
-        <Metric label="Mission Time" value={formatMissionElapsedTime(simTime)} />
+        <Metric label="Mission Elapsed" value={formatMissionElapsedTime(simTime)} />
+        <Metric
+          label="Mission Duration"
+          value={`${formatMissionDurationSummary()} (${MISSION_TIMELINE_CONFIG.referenceLabel})`}
+        />
         <Metric label="Playback State" value={isPlaying ? "Playing" : "Paused"} />
         <Metric label="Playback Speed" value={`x${playbackSpeed.toFixed(2)}`} />
+      </div>
+
+      <div className="space-y-3 rounded border border-slate-800 bg-slate-900/60 p-3">
+        <div className="text-xs uppercase tracking-wide text-slate-400">Mission State</div>
+        <Metric label="Active Phase" value={snapshot.activePhase.label} />
+        <Metric label="Active Mode" value={snapshot.activeMode.label} />
+        <Metric
+          label="Active Events"
+          value={
+            snapshot.activeEvents.length > 0
+              ? snapshot.activeEvents.map((event) => event.label).join(", ")
+              : "None"
+          }
+        />
+        <Metric
+          label="Next Event"
+          value={snapshot.nextEvent ? snapshot.nextEvent.label : "None"}
+        />
+      </div>
+
+      <div className="space-y-3 rounded border border-slate-800 bg-slate-900/60 p-3">
+        <div className="text-xs uppercase tracking-wide text-slate-400">
+          Subsystem Summary
+        </div>
+        {snapshot.subsystemSummary.map((subsystem) => (
+          <div key={subsystem.id} className="rounded border border-slate-800 p-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-slate-100">
+                {subsystem.label}
+              </span>
+              <span
+                className="rounded px-2 py-0.5 text-[10px] font-semibold text-slate-950"
+                style={{ backgroundColor: subsystem.color }}
+              >
+                {subsystem.status.toUpperCase()}
+              </span>
+            </div>
+            <div className="mt-1 text-xs text-slate-300">{subsystem.summary}</div>
+          </div>
+        ))}
       </div>
 
       <div className="space-y-3 rounded border border-slate-800 bg-slate-900/60 p-3">
@@ -109,7 +161,28 @@ function InfoPanel() {
           label={`${firstSat?.name ?? "Satellite"} Position`}
           value={`x:${firstSatPos[0].toFixed(3)} y:${firstSatPos[1].toFixed(3)} z:${firstSatPos[2].toFixed(3)}`}
         />
-        <Metric label="Hovered Object Id" value={hoveredObjectId ?? "None"} />
+        <Metric
+          label="Selected Ref"
+          value={formatSelectionDebug({
+            id: selectedObjectId,
+            type: selectedObjectType,
+          })}
+        />
+        <Metric
+          label="Hovered Ref"
+          value={formatSelectionDebug({ id: hoveredObjectId, type: hoveredObjectType })}
+        />
+        <Metric label="Active Phase Id" value={snapshot.activePhase.id} />
+        <Metric label="Active Mode Id" value={snapshot.activeMode.id} />
+        <Metric
+          label="Active Event Ids"
+          value={
+            snapshot.activeEvents.length > 0
+              ? snapshot.activeEvents.map((event) => event.id).join(", ")
+              : "None"
+          }
+        />
+        <Metric label="Next Event Id" value={snapshot.nextEvent?.id ?? "None"} />
         <Metric label="Sim Time Raw" value={simTime.toFixed(6)} />
       </div>
     </div>

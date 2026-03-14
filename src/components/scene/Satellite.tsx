@@ -3,6 +3,7 @@ import { getSatelliteOrbitState } from "../../lib/orbit";
 import { useSimStore } from "../../store/simStore";
 import { SatelliteConfig } from "../../types/sim";
 import ObjectLabel from "./ObjectLabel";
+import { getCurrentMissionSnapshot } from "../../lib/missionTimeline";
 
 type SatelliteProps = {
   satellite: SatelliteConfig;
@@ -21,6 +22,7 @@ function Satellite({ satellite }: SatelliteProps) {
     () => getSatelliteOrbitState(simTime, satellite.orbit),
     [simTime, satellite.orbit],
   );
+  const modeColor = getCurrentMissionSnapshot(simTime).activeMode.color;
   const isSelected = selectedObjectId === satellite.id;
   const isHovered = hoveredObjectId === satellite.id;
   const showLabel = showLabels && (isSelected || isHovered);
@@ -43,9 +45,9 @@ function Satellite({ satellite }: SatelliteProps) {
       >
         <sphereGeometry args={[satellite.radius, 18, 18]} />
         <meshStandardMaterial
-          color={isSelected ? satellite.selectedColor : satellite.color}
-          emissive={isSelected ? "#fb923c" : "#dbeafe"}
-          emissiveIntensity={isSelected ? 0.75 : 0.2}
+          color={isSelected ? modeColor : satellite.color}
+          emissive={isSelected ? modeColor : "#dbeafe"}
+          emissiveIntensity={isSelected ? 0.55 : 0.2}
           roughness={0.25}
           metalness={0.6}
         />
@@ -54,7 +56,7 @@ function Satellite({ satellite }: SatelliteProps) {
       {isSelected ? (
         <mesh rotation={[Math.PI / 2, 0, 0]}>
           <ringGeometry args={[satellite.radius * 1.45, satellite.radius * 1.7, 48]} />
-          <meshBasicMaterial color="#fb923c" transparent opacity={0.9} />
+          <meshBasicMaterial color={modeColor} transparent opacity={0.9} />
         </mesh>
       ) : null}
 

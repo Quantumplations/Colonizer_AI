@@ -1,29 +1,22 @@
-import { ChangeEvent, useMemo, useState } from "react";
 import { useSimStore } from "../../store/simStore";
-import { formatMissionElapsedTime, formatNormalizedTime } from "../../lib/time";
+import {
+  formatMissionDurationSummary,
+  formatMissionElapsedTime,
+  formatNormalizedTime,
+} from "../../lib/time";
 import { PLAYBACK_SPEED_OPTIONS } from "../../config/simSettings";
-import { TIMELINE_EVENTS } from "../../data";
+import MissionTimeline from "./MissionTimeline";
+import { getCurrentMissionSnapshot } from "../../lib/missionTimeline";
 
 function TimelineControls() {
   const simTime = useSimStore((state) => state.simTime);
   const isPlaying = useSimStore((state) => state.isPlaying);
   const playbackSpeed = useSimStore((state) => state.playbackSpeed);
-  const setSimTime = useSimStore((state) => state.setSimTime);
   const togglePlay = useSimStore((state) => state.togglePlay);
   const setPlaybackSpeed = useSimStore((state) => state.setPlaybackSpeed);
   const requestCameraCommand = useSimStore((state) => state.requestCameraCommand);
   const selectedObjectId = useSimStore((state) => state.selectedObjectId);
-  const selectObject = useSimStore((state) => state.selectObject);
-  const [activeEventId, setActiveEventId] = useState<string | null>(null);
-
-  const activeEvent = useMemo(
-    () => TIMELINE_EVENTS.find((event) => event.id === activeEventId) ?? null,
-    [activeEventId],
-  );
-
-  const onSliderChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setSimTime(Number(event.target.value));
-  };
+  const snapshot = getCurrentMissionSnapshot(simTime);
 
   return (
     <div className="space-y-3">
@@ -57,48 +50,18 @@ function TimelineControls() {
         <div className="text-right text-xs text-slate-300">
           <div>t = {formatNormalizedTime(simTime)}</div>
           <div>{formatMissionElapsedTime(simTime)}</div>
+          <div className="text-[10px] text-slate-500">
+            duration {formatMissionDurationSummary()}
+          </div>
+          <div className="text-[10px] text-slate-400">
+            {snapshot.activeEvents.length > 0
+              ? `Active: ${snapshot.activeEvents.map((item) => item.label).join(", ")}`
+              : "Active: none"}
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <span className="text-xs text-slate-400">Time</span>
-        <input
-          type="range"
-          min={0}
-          max={1}
-          step={0.001}
-          value={simTime}
-          onChange={onSliderChange}
-          className="h-2 w-full cursor-pointer rounded accent-sky-500"
-        />
-      </div>
-
-      <div className="space-y-1">
-        <div className="flex items-center justify-between text-[11px] text-slate-400">
-          <span>Timeline Events</span>
-          <span>{activeEvent ? activeEvent.label : "Hover/click marker"}</span>
-        </div>
-        <div className="relative h-6 rounded border border-slate-800 bg-slate-900/80">
-          {TIMELINE_EVENTS.map((event) => (
-            <button
-              key={event.id}
-              type="button"
-              title={event.label}
-              onMouseEnter={() => setActiveEventId(event.id)}
-              onMouseLeave={() => setActiveEventId((prev) => (prev === event.id ? null : prev))}
-              onClick={() => {
-                setSimTime(event.time);
-                setActiveEventId(event.id);
-                if (event.relatedObjectId && event.relatedObjectType) {
-                  selectObject(event.relatedObjectId, event.relatedObjectType);
-                }
-              }}
-              className="absolute top-1/2 h-3 w-2 -translate-y-1/2 rounded-sm bg-amber-400 hover:bg-amber-300"
-              style={{ left: `calc(${event.time * 100}% - 4px)` }}
-            />
-          ))}
-        </div>
-      </div>
+      <MissionTimeline />
 
       <div className="flex items-center gap-2 text-xs">
         <span className="text-slate-400">Speed</span>

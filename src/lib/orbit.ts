@@ -52,6 +52,8 @@ export function getOrbitPathPoints(
 ): Vector3Tuple[] {
   return Array.from({ length: segments + 1 }, (_, index) => {
     const normalized = index / segments;
-    return getSatelliteOrbitState(normalized, orbit).position;
+    // Orbit track is geometric and should always render as a full ring.
+    // Speed multipliers affect satellite motion only, not orbit shape coverage.
+    return getOrbitState(normalized, orbit).position;
   });
 }
