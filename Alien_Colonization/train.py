@@ -17,8 +17,10 @@ from config import (
     LOSS_WEIGHT_TIMELINE, LOSS_WEIGHT_INFRASTRUCTURE,
     TRAIN_DATASET_SIZE, VAL_DATASET_SIZE, NUM_WORKERS, DEVICE,
 )
+from torch.utils.data import random_split
 from model import ColonizerModel, count_parameters
 from data_generator import SyntheticColonizationDataset
+from nasa_exoplanet_dataset import NASAExoplanetDataset, load_nasa_star_systems
 
 
 def get_lr_scheduler(optimizer, warmup_steps, total_steps):
@@ -141,21 +143,37 @@ def validate(model, dataloader):
     return val_losses
 
 
-def train(epochs=None, batch_size=None, resume_from=None):
-    """Full training loop."""
+def train(epochs=None, batch_size=None, resume_from=None, dataset="synthetic"):
+    """Full training loop.
+
+    Args:
+        dataset: "synthetic" (default) or "nasa" to use the NASA Exoplanet Archive.
+    """
     epochs = epochs or NUM_EPOCHS
     batch_size = batch_size or BATCH_SIZE
 
     print("=" * 60)
     print("COLONIZER AI — TRAINING")
     print("=" * 60)
-    print(f"Device: {DEVICE}")
-    print(f"Epochs: {epochs}, Batch size: {batch_size}")
+    print(f"Device:  {DEVICE}")
+    print(f"Dataset: {dataset}")
+    print(f"Epochs:  {epochs}, Batch size: {batch_size}")
     print()
 
     # Data
-    train_dataset = SyntheticColonizationDataset(TRAIN_DATASET_SIZE, seed=42)
-    val_dataset = SyntheticColonizationDataset(VAL_DATASET_SIZE, seed=99999)
+    if dataset == "nasa":
+        systems = load_nasa_star_systems()
+        n_val = max(1, int(len(systems) * 0.1))
+        n_train = len(systems) - n_val
+        train_dataset, val_dataset = random_split(
+            NASAExoplanetDataset(systems),
+            [n_train, n_val],
+            generator=torch.Generator().manual_seed(42),
+        )
+        print(f"NASA split: {n_train} train / {n_val} val systems")
+    else:
+        train_dataset = SyntheticColonizationDataset(TRAIN_DATASET_SIZE, seed=42)
+        val_dataset = SyntheticColonizationDataset(VAL_DATASET_SIZE, seed=99999)
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size,
                               shuffle=True, num_workers=NUM_WORKERS)
@@ -242,6 +260,9 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int, default=NUM_EPOCHS)
     parser.add_argument("--batch-size", type=int, default=BATCH_SIZE)
     parser.add_argument("--resume", type=str, default=None, help="Resume from checkpoint")
+    parser.add_argument("--dataset", choices=["synthetic", "nasa"], default="synthetic",
+                        help="Training data source (default: synthetic)")
     args = parser.parse_args()
 
-    train(epochs=args.epochs, batch_size=args.batch_size, resume_from=args.resume)
+    train(epochs=args.epochs, batch_size=args.batch_size,
+          resume_from=args.resume, dataset=args.dataset)

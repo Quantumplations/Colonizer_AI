@@ -15,7 +15,8 @@ import sys
 def cmd_train(args):
     """Run training pipeline."""
     from train import train
-    train(epochs=args.epochs, batch_size=args.batch_size, resume_from=args.resume)
+    train(epochs=args.epochs, batch_size=args.batch_size,
+          resume_from=args.resume, dataset=args.dataset)
 
 
 def cmd_infer(args):
@@ -32,7 +33,7 @@ def cmd_demo(args):
     # Train
     print("Step 1/3: Training model...")
     from train import train
-    model = train(epochs=args.epochs, batch_size=args.batch_size)
+    model = train(epochs=args.epochs, batch_size=args.batch_size, dataset=args.dataset)
 
     # Infer
     print("\nStep 2/3: Running inference on Solar System...")
@@ -69,6 +70,8 @@ Examples:
     train_parser.add_argument("--epochs", type=int, default=100)
     train_parser.add_argument("--batch-size", type=int, default=32)
     train_parser.add_argument("--resume", type=str, default=None)
+    train_parser.add_argument("--dataset", choices=["synthetic", "nasa"], default="synthetic",
+                              help="Training data source (default: synthetic)")
 
     # Infer
     infer_parser = subparsers.add_parser("infer", help="Run inference on Solar System")
@@ -78,6 +81,8 @@ Examples:
     demo_parser = subparsers.add_parser("demo", help="Full demo pipeline")
     demo_parser.add_argument("--epochs", type=int, default=20)
     demo_parser.add_argument("--batch-size", type=int, default=32)
+    demo_parser.add_argument("--dataset", choices=["synthetic", "nasa"], default="synthetic",
+                             help="Training data source (default: synthetic)")
 
     args = parser.parse_args()
 
