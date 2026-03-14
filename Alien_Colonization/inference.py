@@ -137,7 +137,7 @@ class PlanAssembler:
         lines.append("")
         lines.append(f"Target star: {self.star['name']} "
                      f"(Spectral class {self.star['spectral_class']}, "
-                     f"{self.star['luminosity_solar']:.2f} L☉, "
+                     f"{self.star['luminosity_solar']:.2f} Lsun, "
                      f"{self.star['effective_temp_K']:.0f} K)")
         lines.append(f"Number of planets detected: {self.n_planets}")
         lines.append("")
@@ -149,7 +149,7 @@ class PlanAssembler:
         lines.append(f"  Suitability: {suit[best_idx]:.1%} ({self._score_to_grade(suit[best_idx])})")
         lines.append(f"  Surface temperature: {best['surface_temp_K']:.0f} K")
         lines.append(f"  Surface gravity: {best['surface_gravity_ms2']:.2f} m/s²")
-        lines.append(f"  Mass: {best['mass_earth']:.3f} M⊕, Radius: {best['radius_earth']:.3f} R⊕")
+        lines.append(f"  Mass: {best['mass_earth']:.3f} Mearth, Radius: {best['radius_earth']:.3f} Rearth")
         lines.append("")
 
         lines.append("COLONIZATION PRIORITY ORDER:")

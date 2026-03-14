@@ -23,6 +23,15 @@ from data_generator import SyntheticColonizationDataset
 from nasa_exoplanet_dataset import NASAExoplanetDataset, load_nasa_star_systems
 
 
+def _save_checkpoint(ckpt, path):
+    """Write to a temp file then rename to avoid file-lock issues (e.g. OneDrive)."""
+    tmp = path + ".tmp"
+    torch.save(ckpt, tmp)
+    if os.path.exists(path):
+        os.remove(path)
+    os.rename(tmp, path)
+
+
 def get_lr_scheduler(optimizer, warmup_steps, total_steps):
     """Cosine annealing with linear warmup."""
     def lr_lambda(step):
@@ -235,7 +244,7 @@ def train(epochs=None, batch_size=None, resume_from=None, dataset="synthetic"):
         is_best = val_losses["total"] < best_val_loss
         if is_best:
             best_val_loss = val_losses["total"]
-            print(f"  ★ New best val loss: {best_val_loss:.4f}")
+            print(f"  * New best val loss: {best_val_loss:.4f}")
 
         ckpt = {
             "epoch": epoch,
@@ -246,9 +255,9 @@ def train(epochs=None, batch_size=None, resume_from=None, dataset="synthetic"):
             "val_losses": val_losses,
             "best_val_loss": best_val_loss,
         }
-        torch.save(ckpt, os.path.join(CHECKPOINT_DIR, "latest.pt"))
+        _save_checkpoint(ckpt, os.path.join(CHECKPOINT_DIR, "latest.pt"))
         if is_best:
-            torch.save(ckpt, os.path.join(CHECKPOINT_DIR, "best.pt"))
+            _save_checkpoint(ckpt, os.path.join(CHECKPOINT_DIR, "best.pt"))
 
     print(f"\nTraining complete! Best val loss: {best_val_loss:.4f}")
     print(f"Checkpoints saved to {CHECKPOINT_DIR}/")
