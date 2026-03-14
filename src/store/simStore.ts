@@ -7,7 +7,7 @@ import {
 import {
   DEFAULT_PLAYBACK_SPEED,
   MAX_SIM_DELTA_SECONDS,
-} from "../config/simConfig";
+} from "../config/simSettings";
 import { SimObjectType } from "../types/sim";
 
 type CameraCommandType = "reset" | "focusSelected";
@@ -23,6 +23,12 @@ type SimStoreState = {
   playbackSpeed: number;
   selectedObjectId: string | null;
   selectedObjectType: SimObjectType | null;
+  hoveredObjectId: string | null;
+  hoveredObjectType: SimObjectType | null;
+  showSatellites: boolean;
+  showOrbits: boolean;
+  showGroundStations: boolean;
+  showLabels: boolean;
   cameraCommand: CameraCommand | null;
 };
 
@@ -32,6 +38,9 @@ type SimStoreActions = {
   setPlaybackSpeed: (speed: number) => void;
   selectObject: (id: string, type: SimObjectType) => void;
   clearSelection: () => void;
+  setHoveredObject: (id: string, type: SimObjectType) => void;
+  clearHoveredObject: () => void;
+  toggleLayer: (layer: "satellites" | "orbits" | "groundStations" | "labels") => void;
   requestCameraCommand: (type: CameraCommandType) => void;
   tick: (deltaSeconds: number) => void;
 };
@@ -44,6 +53,12 @@ export const useSimStore = create<SimStore>((set) => ({
   playbackSpeed: DEFAULT_PLAYBACK_SPEED,
   selectedObjectId: null,
   selectedObjectType: null,
+  hoveredObjectId: null,
+  hoveredObjectType: null,
+  showSatellites: true,
+  showOrbits: true,
+  showGroundStations: true,
+  showLabels: true,
   cameraCommand: null,
   setSimTime: (time) =>
     set({
@@ -66,6 +81,29 @@ export const useSimStore = create<SimStore>((set) => ({
     set({
       selectedObjectId: null,
       selectedObjectType: null,
+    }),
+  setHoveredObject: (id, type) =>
+    set({
+      hoveredObjectId: id,
+      hoveredObjectType: type,
+    }),
+  clearHoveredObject: () =>
+    set({
+      hoveredObjectId: null,
+      hoveredObjectType: null,
+    }),
+  toggleLayer: (layer) =>
+    set((state) => {
+      if (layer === "satellites") {
+        return { showSatellites: !state.showSatellites };
+      }
+      if (layer === "orbits") {
+        return { showOrbits: !state.showOrbits };
+      }
+      if (layer === "groundStations") {
+        return { showGroundStations: !state.showGroundStations };
+      }
+      return { showLabels: !state.showLabels };
     }),
   requestCameraCommand: (type) =>
     set((state) => ({

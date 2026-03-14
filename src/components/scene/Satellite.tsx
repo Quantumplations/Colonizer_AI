@@ -1,7 +1,8 @@
 import { useMemo } from "react";
-import { getOrbitState } from "../../lib/orbit";
+import { getSatelliteOrbitState } from "../../lib/orbit";
 import { useSimStore } from "../../store/simStore";
 import { SatelliteConfig } from "../../types/sim";
+import ObjectLabel from "./ObjectLabel";
 
 type SatelliteProps = {
   satellite: SatelliteConfig;
@@ -10,13 +11,19 @@ type SatelliteProps = {
 function Satellite({ satellite }: SatelliteProps) {
   const simTime = useSimStore((state) => state.simTime);
   const selectedObjectId = useSimStore((state) => state.selectedObjectId);
+  const hoveredObjectId = useSimStore((state) => state.hoveredObjectId);
+  const showLabels = useSimStore((state) => state.showLabels);
   const selectObject = useSimStore((state) => state.selectObject);
+  const setHoveredObject = useSimStore((state) => state.setHoveredObject);
+  const clearHoveredObject = useSimStore((state) => state.clearHoveredObject);
 
   const orbitState = useMemo(
-    () => getOrbitState(simTime, satellite.orbit),
+    () => getSatelliteOrbitState(simTime, satellite.orbit),
     [simTime, satellite.orbit],
   );
   const isSelected = selectedObjectId === satellite.id;
+  const isHovered = hoveredObjectId === satellite.id;
+  const showLabel = showLabels && (isSelected || isHovered);
 
   return (
     <group position={orbitState.position}>
@@ -24,6 +31,14 @@ function Satellite({ satellite }: SatelliteProps) {
         onClick={(event) => {
           event.stopPropagation();
           selectObject(satellite.id, satellite.type);
+        }}
+        onPointerOver={(event) => {
+          event.stopPropagation();
+          setHoveredObject(satellite.id, satellite.type);
+        }}
+        onPointerOut={(event) => {
+          event.stopPropagation();
+          clearHoveredObject();
         }}
       >
         <sphereGeometry args={[satellite.radius, 18, 18]} />
@@ -42,6 +57,8 @@ function Satellite({ satellite }: SatelliteProps) {
           <meshBasicMaterial color="#fb923c" transparent opacity={0.9} />
         </mesh>
       ) : null}
+
+      {showLabel ? <ObjectLabel text={satellite.name} /> : null}
     </group>
   );
 }

@@ -1,3 +1,5 @@
+import { MISSION_DURATION_SECONDS } from "../config/simSettings";
+
 export function clamp01(value: number): number {
   if (Number.isNaN(value)) {
     return 0;
@@ -26,7 +28,7 @@ export function formatNormalizedTime(normalizedTime: number): string {
 
 export function formatMissionElapsedTime(
   normalizedTime: number,
-  missionDurationSeconds = 24 * 60 * 60,
+  missionDurationSeconds = MISSION_DURATION_SECONDS,
 ): string {
   const totalSeconds = Math.floor(clamp01(normalizedTime) * missionDurationSeconds);
   const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");

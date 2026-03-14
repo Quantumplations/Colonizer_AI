@@ -1,7 +1,8 @@
-import { ChangeEvent } from "react";
+import { ChangeEvent, useMemo, useState } from "react";
 import { useSimStore } from "../../store/simStore";
 import { formatMissionElapsedTime, formatNormalizedTime } from "../../lib/time";
-import { PLAYBACK_SPEED_OPTIONS } from "../../config/simConfig";
+import { PLAYBACK_SPEED_OPTIONS } from "../../config/simSettings";
+import { TIMELINE_EVENTS } from "../../data";
 
 function TimelineControls() {
   const simTime = useSimStore((state) => state.simTime);
@@ -12,6 +13,13 @@ function TimelineControls() {
   const setPlaybackSpeed = useSimStore((state) => state.setPlaybackSpeed);
   const requestCameraCommand = useSimStore((state) => state.requestCameraCommand);
   const selectedObjectId = useSimStore((state) => state.selectedObjectId);
+  const selectObject = useSimStore((state) => state.selectObject);
+  const [activeEventId, setActiveEventId] = useState<string | null>(null);
+
+  const activeEvent = useMemo(
+    () => TIMELINE_EVENTS.find((event) => event.id === activeEventId) ?? null,
+    [activeEventId],
+  );
 
   const onSliderChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSimTime(Number(event.target.value));
@@ -63,6 +71,33 @@ function TimelineControls() {
           onChange={onSliderChange}
           className="h-2 w-full cursor-pointer rounded accent-sky-500"
         />
+      </div>
+
+      <div className="space-y-1">
+        <div className="flex items-center justify-between text-[11px] text-slate-400">
+          <span>Timeline Events</span>
+          <span>{activeEvent ? activeEvent.label : "Hover/click marker"}</span>
+        </div>
+        <div className="relative h-6 rounded border border-slate-800 bg-slate-900/80">
+          {TIMELINE_EVENTS.map((event) => (
+            <button
+              key={event.id}
+              type="button"
+              title={event.label}
+              onMouseEnter={() => setActiveEventId(event.id)}
+              onMouseLeave={() => setActiveEventId((prev) => (prev === event.id ? null : prev))}
+              onClick={() => {
+                setSimTime(event.time);
+                setActiveEventId(event.id);
+                if (event.relatedObjectId && event.relatedObjectType) {
+                  selectObject(event.relatedObjectId, event.relatedObjectType);
+                }
+              }}
+              className="absolute top-1/2 h-3 w-2 -translate-y-1/2 rounded-sm bg-amber-400 hover:bg-amber-300"
+              style={{ left: `calc(${event.time * 100}% - 4px)` }}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="flex items-center gap-2 text-xs">

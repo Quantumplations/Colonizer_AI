@@ -37,12 +37,21 @@ export function getOrbitState(
   };
 }
 
+export function getSatelliteOrbitState(
+  normalizedTime: number,
+  orbit: OrbitConfig,
+): OrbitState {
+  const speedMultiplier = orbit.speedMultiplier ?? 1;
+  const adjustedTime = ((normalizedTime * speedMultiplier) % 1 + 1) % 1;
+  return getOrbitState(adjustedTime, orbit);
+}
+
 export function getOrbitPathPoints(
   orbit: OrbitConfig,
   segments = 128,
 ): Vector3Tuple[] {
   return Array.from({ length: segments + 1 }, (_, index) => {
     const normalized = index / segments;
-    return getOrbitState(normalized, orbit).position;
+    return getSatelliteOrbitState(normalized, orbit).position;
   });
 }
