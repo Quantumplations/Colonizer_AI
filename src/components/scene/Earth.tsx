@@ -1,4 +1,4 @@
-import type { EarthConfig } from "../../types/sim";
+import { EarthConfig } from "../../types/sim";
 import { useSimStore } from "../../store/simStore";
 import { DoubleSide } from "three";
 import ObjectLabel from "./ObjectLabel";

@@ -16,47 +16,21 @@ export type SystemModeId =
 
 export type MissionPhase = {
   id: MissionPhaseId;
-  name: string;
   label: string;
   shortLabel: string;
   description: string;
   color: string;
   startTime: number;
   endTime: number;
-  objectives: string[];
-  majorEvents: string[];
-  exitCriteria: string[];
-  operationalNotes: string[];
-  relatedModes?: SystemModeId[];
-  successCriteria?: string[];
-};
-
-export type SubsystemDetailEntry = {
-  subsystemId: SubsystemId | "obcCdh";
-  subsystemName: string;
-  statusLabel: string;
-  description: string;
-  state: string;
-  constraints: string[];
-  notes?: string[];
-  color?: string;
 };
 
 export type SystemMode = {
   id: SystemModeId;
-  name: string;
   label: string;
   description: string;
   color: string;
   startTime: number;
   endTime: number;
-  entryConditions: string[];
-  exitConditions: string[];
-  operationalPurpose: string;
-  subsystemStates: SubsystemDetailEntry[];
-  allowedActivities: string[];
-  inhibitedActivities: string[];
-  operatorNotes: string[];
 };
 
 export type MissionTimelineEventType =
@@ -78,13 +52,6 @@ export type TimelineEvent = {
   relatedObjectType: SimObjectType | null;
   type: MissionTimelineEventType;
   color?: string;
-  description?: string;
-  objective?: string;
-  relatedScenarioId?: string;
-  relatedPhaseId?: MissionPhaseId;
-  relatedModeId?: SystemModeId;
-  operatorNotes?: string[];
-  linkedConstraints?: string[];
 };
 
 export type SubsystemId = "eps" | "comms" | "aocs" | "payload" | "thermal";

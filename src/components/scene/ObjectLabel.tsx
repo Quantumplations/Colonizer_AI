@@ -1,5 +1,5 @@
 import { Html } from "@react-three/drei";
-import type { Vector3Tuple } from "three";
+import { Vector3Tuple } from "three";
 
 type ObjectLabelProps = {
   text: string;

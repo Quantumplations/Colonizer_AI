@@ -1,17 +1,15 @@
 import { useMemo } from "react";
 import { getSatelliteOrbitState } from "../../lib/orbit";
 import { useSimStore } from "../../store/simStore";
-import type { SatelliteConfig } from "../../types/sim";
+import { SatelliteConfig } from "../../types/sim";
 import ObjectLabel from "./ObjectLabel";
 import { getCurrentMissionSnapshot } from "../../lib/missionTimeline";
-import type { MissionScenario } from "../../types/scenario";
 
 type SatelliteProps = {
   satellite: SatelliteConfig;
-  scenario: MissionScenario;
 };
 
-function Satellite({ satellite, scenario }: SatelliteProps) {
+function Satellite({ satellite }: SatelliteProps) {
   const simTime = useSimStore((state) => state.simTime);
   const selectedObjectId = useSimStore((state) => state.selectedObjectId);
   const hoveredObjectId = useSimStore((state) => state.hoveredObjectId);
@@ -24,7 +22,7 @@ function Satellite({ satellite, scenario }: SatelliteProps) {
     () => getSatelliteOrbitState(simTime, satellite.orbit),
     [simTime, satellite.orbit],
   );
-  const modeColor = getCurrentMissionSnapshot(scenario, simTime).activeMode.color;
+  const modeColor = getCurrentMissionSnapshot(simTime).activeMode.color;
   const isSelected = selectedObjectId === satellite.id;
   const isHovered = hoveredObjectId === satellite.id;
   const showLabel = showLabels && (isSelected || isHovered);

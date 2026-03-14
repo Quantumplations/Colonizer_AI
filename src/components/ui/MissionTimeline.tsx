@@ -1,36 +1,22 @@
 import { ChangeEvent, useMemo, useState } from "react";
+import { MISSION_PHASES, SYSTEM_MODES, TIMELINE_EVENTS } from "../../data";
 import { useSimStore } from "../../store/simStore";
 import {
   getActiveEvents,
   getCurrentMissionSnapshot,
 } from "../../lib/missionTimeline";
 import { clamp01 } from "../../lib/time";
-import type { TimelineEvent } from "../../types/mission";
-import type { MissionScenario } from "../../types/scenario";
-import { getScenarioTimeline } from "../../lib/scenarioSelectors";
 
-function getSegmentStyle(startTime: number, endTime: number) {
-  return {
-    left: `${startTime * 100}%`,
-    width: `${(endTime - startTime) * 100}%`,
-  };
-}
-
-type MissionTimelineProps = {
-  scenario: MissionScenario;
-};
-
-function MissionTimeline({ scenario }: MissionTimelineProps) {
+function MissionTimeline() {
   const simTime = useSimStore((state) => state.simTime);
   const setSimTime = useSimStore((state) => state.setSimTime);
   const selectObject = useSimStore((state) => state.selectObject);
   const [hoveredEventId, setHoveredEventId] = useState<string | null>(null);
 
-  const snapshot = getCurrentMissionSnapshot(scenario, simTime);
-  const { phases, modes, events } = getScenarioTimeline(scenario);
+  const snapshot = getCurrentMissionSnapshot(simTime);
   const activeEventIds = useMemo(
-    () => new Set(getActiveEvents(events, simTime).map((event) => event.id)),
-    [events, simTime],
+    () => new Set(getActiveEvents(TIMELINE_EVENTS, simTime).map((event) => event.id)),
+    [simTime],
   );
 
   const onSliderChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -38,14 +24,8 @@ function MissionTimeline({ scenario }: MissionTimelineProps) {
   };
 
   const indicatorPosition = `${clamp01(simTime) * 100}%`;
-  const hoveredEvent = events.find((event) => event.id === hoveredEventId) ?? null;
-
-  const handleEventSelect = (event: TimelineEvent) => {
-    setSimTime(event.startTime);
-    if (event.relatedObjectId && event.relatedObjectType) {
-      selectObject(event.relatedObjectId, event.relatedObjectType);
-    }
-  };
+  const hoveredEvent =
+    TIMELINE_EVENTS.find((event) => event.id === hoveredEventId) ?? null;
 
   return (
     <div className="space-y-2">
@@ -56,7 +36,7 @@ function MissionTimeline({ scenario }: MissionTimelineProps) {
 
       <div className="relative rounded border border-slate-800 bg-slate-900/80 p-2">
         <div className="relative h-5 overflow-hidden rounded bg-slate-950/80">
-          {phases.map((phase) => (
+          {MISSION_PHASES.map((phase) => (
             <button
               key={phase.id}
               type="button"
@@ -64,7 +44,8 @@ function MissionTimeline({ scenario }: MissionTimelineProps) {
               onClick={() => setSimTime(phase.startTime)}
               className="absolute inset-y-0 border-r border-slate-950/50"
               style={{
-                ...getSegmentStyle(phase.startTime, phase.endTime),
+                left: `${phase.startTime * 100}%`,
+                width: `${(phase.endTime - phase.startTime) * 100}%`,
                 backgroundColor: phase.color,
                 opacity: snapshot.activePhase.id === phase.id ? 0.9 : 0.5,
               }}
@@ -77,12 +58,13 @@ function MissionTimeline({ scenario }: MissionTimelineProps) {
         </div>
 
         <div className="relative mt-1 h-3 overflow-hidden rounded bg-slate-950/70">
-          {modes.map((mode) => (
+          {SYSTEM_MODES.map((mode) => (
             <div
               key={mode.id}
               className="absolute inset-y-0"
               style={{
-                ...getSegmentStyle(mode.startTime, mode.endTime),
+                left: `${mode.startTime * 100}%`,
+                width: `${(mode.endTime - mode.startTime) * 100}%`,
                 backgroundColor: mode.color,
                 opacity: snapshot.activeMode.id === mode.id ? 0.8 : 0.35,
               }}
@@ -96,7 +78,7 @@ function MissionTimeline({ scenario }: MissionTimelineProps) {
         </div>
 
         <div className="relative mt-2 h-8 overflow-hidden rounded bg-slate-950/80">
-          {events.map((event) => {
+          {TIMELINE_EVENTS.map((event) => {
             const isInterval = typeof event.endTime === "number";
             const isActive = activeEventIds.has(event.id);
 
@@ -110,13 +92,16 @@ function MissionTimeline({ scenario }: MissionTimelineProps) {
                   onMouseLeave={() =>
                     setHoveredEventId((prev) => (prev === event.id ? null : prev))
                   }
-                  onClick={() => handleEventSelect(event)}
+                  onClick={() => {
+                    setSimTime(event.startTime);
+                    if (event.relatedObjectId && event.relatedObjectType) {
+                      selectObject(event.relatedObjectId, event.relatedObjectType);
+                    }
+                  }}
                   className="absolute top-1/2 h-4 -translate-y-1/2 rounded border border-slate-950/40"
                   style={{
-                    ...getSegmentStyle(
-                      event.startTime,
-                      event.endTime ?? event.startTime,
-                    ),
+                    left: `${event.startTime * 100}%`,
+                    width: `${((event.endTime ?? event.startTime) - event.startTime) * 100}%`,
                     backgroundColor: event.color ?? "#fbbf24",
                     opacity: isActive ? 1 : 0.65,
                     boxShadow: isActive ? "0 0 0 1px #ffffff inset" : "none",
@@ -134,7 +119,12 @@ function MissionTimeline({ scenario }: MissionTimelineProps) {
                 onMouseLeave={() =>
                   setHoveredEventId((prev) => (prev === event.id ? null : prev))
                 }
-                onClick={() => handleEventSelect(event)}
+                onClick={() => {
+                  setSimTime(event.startTime);
+                  if (event.relatedObjectId && event.relatedObjectType) {
+                    selectObject(event.relatedObjectId, event.relatedObjectType);
+                  }
+                }}
                 className="absolute top-1/2 h-5 w-[6px] -translate-x-1/2 -translate-y-1/2 rounded-sm"
                 style={{
                   left: `${event.startTime * 100}%`,

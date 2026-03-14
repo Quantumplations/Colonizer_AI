@@ -1,4 +1,4 @@
-import type { Vector3Tuple } from "three";
+import { Vector3Tuple } from "three";
 
 function degToRad(deg: number): number {
   return (deg * Math.PI) / 180;

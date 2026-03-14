@@ -1,4 +1,4 @@
-import type { SimObjectType } from "../types/sim";
+import { SimObjectType } from "../types/sim";
 
 export type SelectionRef = {
   id: string | null;

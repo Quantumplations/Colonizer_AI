@@ -1,5 +1,5 @@
-import type { Vector3Tuple } from "three";
-import type { OrbitConfig } from "../types/sim";
+import { Vector3Tuple } from "three";
+import { OrbitConfig } from "../types/sim";
 
 const FULL_CIRCLE_RADIANS = Math.PI * 2;
 
