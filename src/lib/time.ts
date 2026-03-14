@@ -1,4 +1,4 @@
-import { MISSION_TIMELINE_CONFIG } from "../data";
+const DEFAULT_MISSION_DURATION_SECONDS = 24 * 60 * 60;
 
 export function clamp01(value: number): number {
   if (Number.isNaN(value)) {
@@ -28,7 +28,7 @@ export function formatNormalizedTime(normalizedTime: number): string {
 
 export function formatMissionElapsedTime(
   normalizedTime: number,
-  missionDurationSeconds = MISSION_TIMELINE_CONFIG.totalDurationSeconds,
+  missionDurationSeconds = DEFAULT_MISSION_DURATION_SECONDS,
 ): string {
   const totalSeconds = Math.floor(clamp01(normalizedTime) * missionDurationSeconds);
   const weeks = Math.floor(totalSeconds / (7 * 24 * 60 * 60));
@@ -56,7 +56,7 @@ export function formatMissionElapsedTime(
 }
 
 export function formatMissionDurationSummary(
-  missionDurationSeconds = MISSION_TIMELINE_CONFIG.totalDurationSeconds,
+  missionDurationSeconds = DEFAULT_MISSION_DURATION_SECONDS,
 ): string {
   const totalDays = missionDurationSeconds / (24 * 60 * 60);
   const totalWeeks = totalDays / 7;

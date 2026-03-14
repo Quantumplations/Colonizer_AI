@@ -15,6 +15,8 @@ export type EarthConfig = {
   radius: number;
   color: string;
   atmosphereColor: string;
+  description?: string;
+  metadata?: Record<string, string>;
 };
 
 export type SatelliteConfig = {
@@ -25,6 +27,9 @@ export type SatelliteConfig = {
   color: string;
   selectedColor: string;
   orbit: OrbitConfig;
+  description?: string;
+  capabilities?: string[];
+  metadata?: Record<string, string>;
 };
 
 export type GroundStationConfig = {
@@ -35,6 +40,9 @@ export type GroundStationConfig = {
   longitudeDeg: number;
   color: string;
   radius: number;
+  description?: string;
+  capabilities?: string[];
+  metadata?: Record<string, string>;
 };
 
 export type SelectedObjectInfo = {

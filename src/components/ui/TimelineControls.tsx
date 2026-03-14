@@ -7,16 +7,23 @@ import {
 import { PLAYBACK_SPEED_OPTIONS } from "../../config/simSettings";
 import MissionTimeline from "./MissionTimeline";
 import { getCurrentMissionSnapshot } from "../../lib/missionTimeline";
+import type { MissionScenario } from "../../types/scenario";
+import { getMissionDurationSeconds } from "../../lib/scenarioSelectors";
 
-function TimelineControls() {
+type TimelineControlsProps = {
+  scenario: MissionScenario;
+};
+
+function TimelineControls({ scenario }: TimelineControlsProps) {
   const simTime = useSimStore((state) => state.simTime);
   const isPlaying = useSimStore((state) => state.isPlaying);
   const playbackSpeed = useSimStore((state) => state.playbackSpeed);
+  const selectedObjectId = useSimStore((state) => state.selectedObjectId);
   const togglePlay = useSimStore((state) => state.togglePlay);
   const setPlaybackSpeed = useSimStore((state) => state.setPlaybackSpeed);
   const requestCameraCommand = useSimStore((state) => state.requestCameraCommand);
-  const selectedObjectId = useSimStore((state) => state.selectedObjectId);
-  const snapshot = getCurrentMissionSnapshot(simTime);
+  const snapshot = getCurrentMissionSnapshot(scenario, simTime);
+  const missionDurationSeconds = getMissionDurationSeconds(scenario);
 
   return (
     <div className="space-y-3">
@@ -49,9 +56,9 @@ function TimelineControls() {
 
         <div className="text-right text-xs text-slate-300">
           <div>t = {formatNormalizedTime(simTime)}</div>
-          <div>{formatMissionElapsedTime(simTime)}</div>
+          <div>{formatMissionElapsedTime(simTime, missionDurationSeconds)}</div>
           <div className="text-[10px] text-slate-500">
-            duration {formatMissionDurationSummary()}
+            duration {formatMissionDurationSummary(missionDurationSeconds)}
           </div>
           <div className="text-[10px] text-slate-400">
             {snapshot.activeEvents.length > 0
@@ -61,7 +68,7 @@ function TimelineControls() {
         </div>
       </div>
 
-      <MissionTimeline />
+      <MissionTimeline scenario={scenario} />
 
       <div className="flex items-center gap-2 text-xs">
         <span className="text-slate-400">Speed</span>

@@ -1,43 +1,37 @@
-import { Vector3Tuple } from "three";
-import { EARTH, GROUND_STATIONS, SATELLITES } from "../data";
+import type { Vector3Tuple } from "three";
 import { latLonToCartesian } from "./geo";
 import { getSatelliteOrbitState } from "./orbit";
-import { SimObjectType } from "../types/sim";
+import type { SelectionRef } from "./selection";
+import type { MissionScenario } from "../types/scenario";
+import {
+  getEntityDisplayName,
+  getGroundStationById,
+  getSatelliteById,
+} from "./entityLookup";
+import { getScenarioEarthBody } from "./scenarioSelectors";
 
-type Selection = {
-  id: string | null;
-  type: SimObjectType | null;
-};
-
-type SelectedDetails = {
+export type SelectedObjectDetails = {
   name: string;
   typeLabel: string;
   values: Array<{ label: string; value: string }>;
 };
 
-export function getObjectDisplayName(selection: Selection): string {
+export function getObjectDisplayName(
+  scenario: MissionScenario,
+  selection: SelectionRef,
+): string {
   if (!selection.id || !selection.type) {
     return "Nothing selected";
   }
-  if (selection.type === "earth") {
-    return EARTH.name;
-  }
-  if (selection.type === "satellite") {
-    return SATELLITES.find((sat) => sat.id === selection.id)?.name ?? selection.id;
-  }
-  if (selection.type === "groundStation") {
-    return (
-      GROUND_STATIONS.find((station) => station.id === selection.id)?.name ??
-      selection.id
-    );
-  }
-  return selection.id;
+  return getEntityDisplayName(scenario, selection.id, selection.type);
 }
 
 export function getObjectWorldPosition(
-  selection: Selection,
+  scenario: MissionScenario,
+  selection: SelectionRef,
   simTime: number,
 ): Vector3Tuple | null {
+  const earth = getScenarioEarthBody(scenario);
   if (!selection.id || !selection.type) {
     return null;
   }
@@ -45,30 +39,32 @@ export function getObjectWorldPosition(
     return [0, 0, 0];
   }
   if (selection.type === "satellite") {
-    const sat = SATELLITES.find((item) => item.id === selection.id);
+    const sat = getSatelliteById(scenario, selection.id);
     if (!sat) {
       return null;
     }
     return getSatelliteOrbitState(simTime, sat.orbit).position;
   }
   if (selection.type === "groundStation") {
-    const station = GROUND_STATIONS.find((item) => item.id === selection.id);
-    if (!station) {
+    const station = getGroundStationById(scenario, selection.id);
+    if (!station || !earth) {
       return null;
     }
     return latLonToCartesian(
       station.latitudeDeg,
       station.longitudeDeg,
-      EARTH.radius + 0.015,
+      earth.radius + 0.015,
     );
   }
   return null;
 }
 
 export function getSelectedObjectDetails(
-  selection: Selection,
+  scenario: MissionScenario,
+  selection: SelectionRef,
   simTime: number,
-): SelectedDetails {
+): SelectedObjectDetails {
+  const earth = getScenarioEarthBody(scenario);
   if (!selection.id || !selection.type) {
     return {
       name: "Nothing selected",
@@ -78,15 +74,22 @@ export function getSelectedObjectDetails(
   }
 
   if (selection.type === "earth") {
+    if (!earth) {
+      return {
+        name: selection.id,
+        typeLabel: "Planet/Body",
+        values: [],
+      };
+    }
     return {
-      name: EARTH.name,
+      name: earth.name,
       typeLabel: "Planet/Body",
-      values: [{ label: "Radius", value: EARTH.radius.toFixed(2) }],
+      values: [{ label: "Radius", value: earth.radius.toFixed(2) }],
     };
   }
 
   if (selection.type === "satellite") {
-    const satellite = SATELLITES.find((item) => item.id === selection.id);
+    const satellite = getSatelliteById(scenario, selection.id);
     if (!satellite) {
       return {
         name: selection.id,
@@ -109,7 +112,7 @@ export function getSelectedObjectDetails(
     };
   }
 
-  const station = GROUND_STATIONS.find((item) => item.id === selection.id);
+  const station = getGroundStationById(scenario, selection.id);
   if (!station) {
     return {
       name: selection.id,

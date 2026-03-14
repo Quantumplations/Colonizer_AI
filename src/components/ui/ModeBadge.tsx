@@ -1,9 +1,14 @@
 import { useSimStore } from "../../store/simStore";
 import { getCurrentMissionSnapshot } from "../../lib/missionTimeline";
+import type { MissionScenario } from "../../types/scenario";
 
-function ModeBadge() {
+type ModeBadgeProps = {
+  scenario: MissionScenario;
+};
+
+function ModeBadge({ scenario }: ModeBadgeProps) {
   const simTime = useSimStore((state) => state.simTime);
-  const snapshot = getCurrentMissionSnapshot(simTime);
+  const snapshot = getCurrentMissionSnapshot(scenario, simTime);
 
   return (
     <div className="pointer-events-none absolute left-3 top-3 z-20 rounded border border-slate-700/80 bg-slate-900/80 px-3 py-2 text-xs">

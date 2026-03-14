@@ -1,7 +1,7 @@
 import { Line } from "@react-three/drei";
 import { useMemo } from "react";
 import { getOrbitPathPoints } from "../../lib/orbit";
-import { OrbitConfig } from "../../types/sim";
+import type { OrbitConfig } from "../../types/sim";
 
 type OrbitPathProps = {
   orbit: OrbitConfig;
