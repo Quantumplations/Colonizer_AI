@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { GroundStationConfig } from "../../types/sim";
+import type { GroundStationConfig } from "../../types/sim";
 import { latLonToCartesian } from "../../lib/geo";
 import { useSimStore } from "../../store/simStore";
 import ObjectLabel from "./ObjectLabel";

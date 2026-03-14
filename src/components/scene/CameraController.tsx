@@ -6,12 +6,14 @@ import {
   DEFAULT_CAMERA_TARGET,
 } from "../../config/simSettings";
 import { getObjectWorldPosition } from "../../lib/sceneLookup";
+import type { MissionScenario } from "../../types/scenario";
 
 type CameraControllerProps = {
   controlsRef: MutableRefObject<OrbitControlsImpl | null>;
+  scenario: MissionScenario;
 };
 
-function CameraController({ controlsRef }: CameraControllerProps) {
+function CameraController({ controlsRef, scenario }: CameraControllerProps) {
   const cameraCommand = useSimStore((state) => state.cameraCommand);
   const selectedObjectId = useSimStore((state) => state.selectedObjectId);
   const selectedObjectType = useSimStore((state) => state.selectedObjectType);
@@ -20,11 +22,17 @@ function CameraController({ controlsRef }: CameraControllerProps) {
   const selectedPosition = useMemo(
     () =>
       getObjectWorldPosition(
+        scenario,
         { id: selectedObjectId, type: selectedObjectType },
         simTime,
       ),
-    [selectedObjectId, selectedObjectType, simTime],
+    [scenario, selectedObjectId, selectedObjectType, simTime],
   );
+
+  const resetCameraPosition =
+    scenario.uiDefaults?.defaultCameraPosition ?? DEFAULT_CAMERA_POSITION;
+  const resetCameraTarget =
+    scenario.uiDefaults?.defaultCameraTarget ?? DEFAULT_CAMERA_TARGET;
 
   useEffect(() => {
     const controls = controlsRef.current;
@@ -33,8 +41,8 @@ function CameraController({ controlsRef }: CameraControllerProps) {
     }
 
     if (cameraCommand.type === "reset") {
-      controls.target.set(...DEFAULT_CAMERA_TARGET);
-      controls.object.position.set(...DEFAULT_CAMERA_POSITION);
+      controls.target.set(...resetCameraTarget);
+      controls.object.position.set(...resetCameraPosition);
       controls.update();
       return;
     }
@@ -48,7 +56,7 @@ function CameraController({ controlsRef }: CameraControllerProps) {
       );
       controls.update();
     }
-  }, [cameraCommand, controlsRef, selectedPosition]);
+  }, [cameraCommand, controlsRef, resetCameraPosition, resetCameraTarget, selectedPosition]);
 
   return null;
 }

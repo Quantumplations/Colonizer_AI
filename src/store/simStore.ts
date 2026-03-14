@@ -8,7 +8,7 @@ import {
   DEFAULT_PLAYBACK_SPEED,
   MAX_SIM_DELTA_SECONDS,
 } from "../config/simSettings";
-import { SimObjectType } from "../types/sim";
+import type { SimObjectType } from "../types/sim";
 
 type CameraCommandType = "reset" | "focusSelected";
 
@@ -18,6 +18,7 @@ type CameraCommand = {
 };
 
 type SimStoreState = {
+  activeScenarioId: string | null;
   simTime: number;
   isPlaying: boolean;
   playbackSpeed: number;
@@ -33,6 +34,7 @@ type SimStoreState = {
 };
 
 type SimStoreActions = {
+  setActiveScenarioId: (id: string) => void;
   setSimTime: (time: number) => void;
   togglePlay: () => void;
   setPlaybackSpeed: (speed: number) => void;
@@ -48,6 +50,7 @@ type SimStoreActions = {
 type SimStore = SimStoreState & SimStoreActions;
 
 export const useSimStore = create<SimStore>((set) => ({
+  activeScenarioId: null,
   simTime: 0,
   isPlaying: false,
   playbackSpeed: DEFAULT_PLAYBACK_SPEED,
@@ -60,6 +63,10 @@ export const useSimStore = create<SimStore>((set) => ({
   showGroundStations: true,
   showLabels: true,
   cameraCommand: null,
+  setActiveScenarioId: (id) =>
+    set({
+      activeScenarioId: id,
+    }),
   setSimTime: (time) =>
     set({
       simTime: clamp01(time),
