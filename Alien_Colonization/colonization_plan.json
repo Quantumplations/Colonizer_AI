@@ -1,0 +1,433 @@
+{
+  "star_system": {
+    "star_name": "Sol",
+    "spectral_class": "G",
+    "luminosity_solar": 1.0,
+    "temperature_K": 5778,
+    "mass_solar": 1.0,
+    "num_planets": 8
+  },
+  "planet_assessments": [
+    {
+      "name": "Mercury",
+      "suitability_score": 0.702,
+      "suitability_grade": "B \u2014 Good",
+      "orbital_params": {
+        "semi_major_axis_au": 0.387,
+        "eccentricity": 0.2056,
+        "orbital_period_yr": 0.241
+      },
+      "physical_params": {
+        "mass_earth": 0.055,
+        "radius_earth": 0.383,
+        "surface_temp_K": 440,
+        "surface_gravity_ms2": 3.7
+      },
+      "resources": {
+        "mineral_mining": 0.943,
+        "fuel_extraction": 0.005,
+        "atmospheric_harvesting": 0.999,
+        "water_extraction": 0.87,
+        "energy_generation": 0.977,
+        "construction_materials": 0.972
+      },
+      "recommended_infrastructure": [
+        "orbital_station",
+        "surface_habitat",
+        "mining_facility",
+        "atmosphere_processor",
+        "water_extractor",
+        "power_plant",
+        "spaceport",
+        "communications_relay"
+      ],
+      "infrastructure_scores": {
+        "orbital_station": 0.562,
+        "surface_habitat": 0.496,
+        "mining_facility": 0.85,
+        "fuel_refinery": 0.015,
+        "atmosphere_processor": 0.702,
+        "water_extractor": 0.765,
+        "power_plant": 0.796,
+        "spaceport": 0.42,
+        "communications_relay": 0.442,
+        "terraforming_engine": 0.174
+      }
+    },
+    {
+      "name": "Venus",
+      "suitability_score": 0.433,
+      "suitability_grade": "C \u2014 Moderate",
+      "orbital_params": {
+        "semi_major_axis_au": 0.723,
+        "eccentricity": 0.0068,
+        "orbital_period_yr": 0.615
+      },
+      "physical_params": {
+        "mass_earth": 0.815,
+        "radius_earth": 0.949,
+        "surface_temp_K": 737,
+        "surface_gravity_ms2": 8.87
+      },
+      "resources": {
+        "mineral_mining": 0.87,
+        "fuel_extraction": 0.002,
+        "atmospheric_harvesting": 0.998,
+        "water_extraction": 0.411,
+        "energy_generation": 0.979,
+        "construction_materials": 0.926
+      },
+      "recommended_infrastructure": [
+        "orbital_station",
+        "mining_facility",
+        "atmosphere_processor",
+        "water_extractor",
+        "power_plant",
+        "communications_relay"
+      ],
+      "infrastructure_scores": {
+        "orbital_station": 0.358,
+        "surface_habitat": 0.206,
+        "mining_facility": 0.802,
+        "fuel_refinery": 0.013,
+        "atmosphere_processor": 0.718,
+        "water_extractor": 0.405,
+        "power_plant": 0.826,
+        "spaceport": 0.253,
+        "communications_relay": 0.3,
+        "terraforming_engine": 0.187
+      }
+    },
+    {
+      "name": "Earth",
+      "suitability_score": 0.721,
+      "suitability_grade": "B \u2014 Good",
+      "orbital_params": {
+        "semi_major_axis_au": 1.0,
+        "eccentricity": 0.0167,
+        "orbital_period_yr": 1.0
+      },
+      "physical_params": {
+        "mass_earth": 1.0,
+        "radius_earth": 1.0,
+        "surface_temp_K": 288,
+        "surface_gravity_ms2": 9.81
+      },
+      "resources": {
+        "mineral_mining": 0.901,
+        "fuel_extraction": 0.004,
+        "atmospheric_harvesting": 0.998,
+        "water_extraction": 0.741,
+        "energy_generation": 0.937,
+        "construction_materials": 0.962
+      },
+      "recommended_infrastructure": [
+        "orbital_station",
+        "surface_habitat",
+        "mining_facility",
+        "atmosphere_processor",
+        "water_extractor",
+        "power_plant",
+        "spaceport",
+        "communications_relay"
+      ],
+      "infrastructure_scores": {
+        "orbital_station": 0.578,
+        "surface_habitat": 0.526,
+        "mining_facility": 0.806,
+        "fuel_refinery": 0.015,
+        "atmosphere_processor": 0.696,
+        "water_extractor": 0.65,
+        "power_plant": 0.747,
+        "spaceport": 0.43,
+        "communications_relay": 0.461,
+        "terraforming_engine": 0.186
+      }
+    },
+    {
+      "name": "Mars",
+      "suitability_score": 0.438,
+      "suitability_grade": "C \u2014 Moderate",
+      "orbital_params": {
+        "semi_major_axis_au": 1.524,
+        "eccentricity": 0.0934,
+        "orbital_period_yr": 1.881
+      },
+      "physical_params": {
+        "mass_earth": 0.107,
+        "radius_earth": 0.532,
+        "surface_temp_K": 210,
+        "surface_gravity_ms2": 3.72
+      },
+      "resources": {
+        "mineral_mining": 0.639,
+        "fuel_extraction": 0.005,
+        "atmospheric_harvesting": 0.996,
+        "water_extraction": 0.469,
+        "energy_generation": 0.394,
+        "construction_materials": 0.637
+      },
+      "recommended_infrastructure": [
+        "orbital_station",
+        "mining_facility",
+        "atmosphere_processor",
+        "water_extractor",
+        "power_plant",
+        "communications_relay"
+      ],
+      "infrastructure_scores": {
+        "orbital_station": 0.343,
+        "surface_habitat": 0.194,
+        "mining_facility": 0.556,
+        "fuel_refinery": 0.021,
+        "atmosphere_processor": 0.706,
+        "water_extractor": 0.388,
+        "power_plant": 0.352,
+        "spaceport": 0.235,
+        "communications_relay": 0.306,
+        "terraforming_engine": 0.171
+      }
+    },
+    {
+      "name": "Jupiter",
+      "suitability_score": 0.063,
+      "suitability_grade": "F \u2014 Unsuitable",
+      "orbital_params": {
+        "semi_major_axis_au": 5.203,
+        "eccentricity": 0.0489,
+        "orbital_period_yr": 11.86
+      },
+      "physical_params": {
+        "mass_earth": 317.8,
+        "radius_earth": 11.21,
+        "surface_temp_K": 165,
+        "surface_gravity_ms2": 24.79
+      },
+      "resources": {
+        "mineral_mining": 0.004,
+        "fuel_extraction": 0.826,
+        "atmospheric_harvesting": 0.975,
+        "water_extraction": 0.802,
+        "energy_generation": 0.049,
+        "construction_materials": 0.001
+      },
+      "recommended_infrastructure": [
+        "fuel_refinery",
+        "atmosphere_processor",
+        "water_extractor"
+      ],
+      "infrastructure_scores": {
+        "orbital_station": 0.048,
+        "surface_habitat": 0.009,
+        "mining_facility": 0.007,
+        "fuel_refinery": 0.739,
+        "atmosphere_processor": 0.703,
+        "water_extractor": 0.718,
+        "power_plant": 0.03,
+        "spaceport": 0.042,
+        "communications_relay": 0.117,
+        "terraforming_engine": 0.006
+      }
+    },
+    {
+      "name": "Saturn",
+      "suitability_score": 0.069,
+      "suitability_grade": "F \u2014 Unsuitable",
+      "orbital_params": {
+        "semi_major_axis_au": 9.537,
+        "eccentricity": 0.0565,
+        "orbital_period_yr": 29.46
+      },
+      "physical_params": {
+        "mass_earth": 95.16,
+        "radius_earth": 9.45,
+        "surface_temp_K": 134,
+        "surface_gravity_ms2": 10.44
+      },
+      "resources": {
+        "mineral_mining": 0.003,
+        "fuel_extraction": 0.824,
+        "atmospheric_harvesting": 0.974,
+        "water_extraction": 0.815,
+        "energy_generation": 0.023,
+        "construction_materials": 0.003
+      },
+      "recommended_infrastructure": [
+        "fuel_refinery",
+        "atmosphere_processor",
+        "water_extractor"
+      ],
+      "infrastructure_scores": {
+        "orbital_station": 0.056,
+        "surface_habitat": 0.009,
+        "mining_facility": 0.005,
+        "fuel_refinery": 0.744,
+        "atmosphere_processor": 0.697,
+        "water_extractor": 0.733,
+        "power_plant": 0.014,
+        "spaceport": 0.043,
+        "communications_relay": 0.119,
+        "terraforming_engine": 0.006
+      }
+    },
+    {
+      "name": "Uranus",
+      "suitability_score": 0.124,
+      "suitability_grade": "F \u2014 Unsuitable",
+      "orbital_params": {
+        "semi_major_axis_au": 19.19,
+        "eccentricity": 0.0457,
+        "orbital_period_yr": 84.01
+      },
+      "physical_params": {
+        "mass_earth": 14.54,
+        "radius_earth": 4.01,
+        "surface_temp_K": 76,
+        "surface_gravity_ms2": 8.87
+      },
+      "resources": {
+        "mineral_mining": 0.005,
+        "fuel_extraction": 0.79,
+        "atmospheric_harvesting": 0.976,
+        "water_extraction": 0.791,
+        "energy_generation": 0.01,
+        "construction_materials": 0.014
+      },
+      "recommended_infrastructure": [
+        "fuel_refinery",
+        "atmosphere_processor",
+        "water_extractor"
+      ],
+      "infrastructure_scores": {
+        "orbital_station": 0.108,
+        "surface_habitat": 0.02,
+        "mining_facility": 0.013,
+        "fuel_refinery": 0.708,
+        "atmosphere_processor": 0.688,
+        "water_extractor": 0.733,
+        "power_plant": 0.008,
+        "spaceport": 0.067,
+        "communications_relay": 0.156,
+        "terraforming_engine": 0.012
+      }
+    },
+    {
+      "name": "Neptune",
+      "suitability_score": 0.125,
+      "suitability_grade": "F \u2014 Unsuitable",
+      "orbital_params": {
+        "semi_major_axis_au": 30.07,
+        "eccentricity": 0.0113,
+        "orbital_period_yr": 164.8
+      },
+      "physical_params": {
+        "mass_earth": 17.15,
+        "radius_earth": 3.88,
+        "surface_temp_K": 72,
+        "surface_gravity_ms2": 11.15
+      },
+      "resources": {
+        "mineral_mining": 0.007,
+        "fuel_extraction": 0.773,
+        "atmospheric_harvesting": 0.977,
+        "water_extraction": 0.783,
+        "energy_generation": 0.009,
+        "construction_materials": 0.016
+      },
+      "recommended_infrastructure": [
+        "fuel_refinery",
+        "atmosphere_processor",
+        "water_extractor"
+      ],
+      "infrastructure_scores": {
+        "orbital_station": 0.109,
+        "surface_habitat": 0.022,
+        "mining_facility": 0.018,
+        "fuel_refinery": 0.694,
+        "atmosphere_processor": 0.689,
+        "water_extractor": 0.728,
+        "power_plant": 0.008,
+        "spaceport": 0.069,
+        "communications_relay": 0.158,
+        "terraforming_engine": 0.013
+      }
+    }
+  ],
+  "colonization_timeline": [
+    {
+      "phase_number": 1,
+      "phase_name": "Reconnaissance",
+      "start_year": 0.7,
+      "duration_years": 8.9,
+      "effort_level": 0.303,
+      "priority": 0.997
+    },
+    {
+      "phase_number": 2,
+      "phase_name": "Orbital Insertion",
+      "start_year": 8.9,
+      "duration_years": 14.3,
+      "effort_level": 0.401,
+      "priority": 0.881
+    },
+    {
+      "phase_number": 3,
+      "phase_name": "Initial Landing",
+      "start_year": 22.9,
+      "duration_years": 18.4,
+      "effort_level": 0.503,
+      "priority": 0.759
+    },
+    {
+      "phase_number": 4,
+      "phase_name": "Base Establishment",
+      "start_year": 41.1,
+      "duration_years": 22.2,
+      "effort_level": 0.598,
+      "priority": 0.635
+    },
+    {
+      "phase_number": 5,
+      "phase_name": "Resource Extraction",
+      "start_year": 63.6,
+      "duration_years": 27.4,
+      "effort_level": 0.695,
+      "priority": 0.521
+    },
+    {
+      "phase_number": 6,
+      "phase_name": "Expansion",
+      "start_year": 90.3,
+      "duration_years": 31.4,
+      "effort_level": 0.801,
+      "priority": 0.404
+    },
+    {
+      "phase_number": 7,
+      "phase_name": "Terraforming",
+      "start_year": 123.5,
+      "duration_years": 35.6,
+      "effort_level": 0.901,
+      "priority": 0.279
+    },
+    {
+      "phase_number": 8,
+      "phase_name": "Full Colonization",
+      "start_year": 159.5,
+      "duration_years": 41.3,
+      "effort_level": 0.997,
+      "priority": 0.159
+    }
+  ],
+  "colonization_priority_order": [
+    "Earth",
+    "Mercury",
+    "Mars",
+    "Venus",
+    "Neptune",
+    "Uranus",
+    "Saturn",
+    "Jupiter"
+  ],
+  "narrative": "=== COLONIZATION ASSESSMENT: Sol SYSTEM ===\n\nTarget star: Sol (Spectral class G, 1.00 L\u2609, 5778 K)\nNumber of planets detected: 8\n\nPRIMARY COLONIZATION TARGET: Earth\n  Suitability: 72.1% (B \u2014 Good)\n  Surface temperature: 288 K\n  Surface gravity: 9.81 m/s\u00b2\n  Mass: 1.000 M\u2295, Radius: 1.000 R\u2295\n\nCOLONIZATION PRIORITY ORDER:\n  1. Earth \u2014 suitability 72.1%\n  2. Mercury \u2014 suitability 70.2%\n  3. Mars \u2014 suitability 43.8%\n  4. Venus \u2014 suitability 43.3%\n  5. Neptune \u2014 suitability 12.5%\n  6. Uranus \u2014 suitability 12.4%\n  7. Saturn \u2014 suitability 6.9%\n  8. Jupiter \u2014 suitability 6.3%\n\nCOLONIZATION TIMELINE:\n  Phase 1: Reconnaissance\n    Start: Year 1, Duration: 9 years\n  Phase 2: Orbital Insertion\n    Start: Year 9, Duration: 14 years\n  Phase 3: Initial Landing\n    Start: Year 23, Duration: 18 years\n  Phase 4: Base Establishment\n    Start: Year 41, Duration: 22 years\n  Phase 5: Resource Extraction\n    Start: Year 64, Duration: 27 years\n  Phase 6: Expansion\n    Start: Year 90, Duration: 31 years\n  Phase 7: Terraforming\n    Start: Year 123, Duration: 36 years\n  Phase 8: Full Colonization\n    Start: Year 159, Duration: 41 years\n\nKEY RESOURCE FINDINGS:\n  Mercury: mineral mining (94%), atmospheric harvesting (100%), water extraction (87%), energy generation (98%), construction materials (97%)\n  Venus: mineral mining (87%), atmospheric harvesting (100%), water extraction (41%), energy generation (98%), construction materials (93%)\n  Earth: mineral mining (90%), atmospheric harvesting (100%), water extraction (74%), energy generation (94%), construction materials (96%)\n  Mars: mineral mining (64%), atmospheric harvesting (100%), water extraction (47%), energy generation (39%), construction materials (64%)\n  Jupiter: fuel extraction (83%), atmospheric harvesting (97%), water extraction (80%)\n  Saturn: fuel extraction (82%), atmospheric harvesting (97%), water extraction (81%)\n  Uranus: fuel extraction (79%), atmospheric harvesting (98%), water extraction (79%)\n  Neptune: fuel extraction (77%), atmospheric harvesting (98%), water extraction (78%)\n\n=== END OF ASSESSMENT ==="
+}

@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colonizer AI — 3D Star System Simulator</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #000;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+  }
+  #canvas-container {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 1;
+  }
+  /* HUD Overlay */
+  #hud {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 10;
+    pointer-events: none;
+  }
+  #hud > * { pointer-events: auto; }
+
+  /* Title bar */
+  #title-bar {
+    position: absolute;
+    top: 20px; left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    background: rgba(0,0,0,0.7);
+    border: 1px solid rgba(0, 200, 255, 0.3);
+    border-radius: 12px;
+    padding: 12px 30px;
+    backdrop-filter: blur(10px);
+  }
+  #title-bar h1 {
+    font-size: 22px;
+    font-weight: 300;
+    color: #00e5ff;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  #title-bar .subtitle {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  /* Info panel */
+  #info-panel {
+    position: absolute;
+    top: 100px; right: 20px;
+    width: 340px;
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+    background: rgba(0, 10, 30, 0.85);
+    border: 1px solid rgba(0, 200, 255, 0.2);
+    border-radius: 12px;
+    padding: 18px;
+    backdrop-filter: blur(12px);
+    font-size: 13px;
+    line-height: 1.5;
+    scrollbar-width: thin;
+    scrollbar-color: #00e5ff33 transparent;
+  }
+  #info-panel h2 {
+    font-size: 16px;
+    color: #00e5ff;
+    margin-bottom: 10px;
+    font-weight: 400;
+    letter-spacing: 1px;
+  }
+  #info-panel h3 {
+    font-size: 13px;
+    color: #4dd0e1;
+    margin: 10px 0 5px;
+    font-weight: 500;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .stat-label { color: #888; }
+  .stat-value { color: #e0e0e0; font-weight: 500; }
+  .score-bar {
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    margin: 4px 0;
+    overflow: hidden;
+  }
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+  .grade-A { background: linear-gradient(90deg, #00e676, #00c853); }
+  .grade-B { background: linear-gradient(90deg, #00e5ff, #0091ea); }
+  .grade-C { background: linear-gradient(90deg, #ffab00, #ff6d00); }
+  .grade-D { background: linear-gradient(90deg, #ff5722, #d32f2f); }
+  .grade-F { background: linear-gradient(90deg, #b71c1c, #880e4f); }
+
+  /* Timeline bar */
+  #timeline-bar {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-width: 900px;
+    background: rgba(0, 10, 30, 0.85);
+    border: 1px solid rgba(0, 200, 255, 0.2);
+    border-radius: 12px;
+    padding: 15px 20px;
+    backdrop-filter: blur(12px);
+  }
+  #timeline-label {
+    font-size: 14px;
+    color: #00e5ff;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+  #timeline-slider {
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    outline: none;
+  }
+  #timeline-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    background: #00e5ff;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px #00e5ff88;
+  }
+  #timeline-phases {
+    display: flex;
+    gap: 2px;
+    margin-top: 8px;
+  }
+  .phase-segment {
+    flex: 1;
+    height: 20px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    transition: all 0.3s;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding: 0 3px;
+  }
+  .phase-segment:hover { filter: brightness(1.3); }
+  .phase-segment.active {
+    filter: brightness(1.5);
+    box-shadow: 0 0 8px rgba(0,229,255,0.4);
+  }
+
+  /* Controls help */
+  #controls-help {
+    position: absolute;
+    bottom: 120px;
+    left: 20px;
+    font-size: 11px;
+    color: #555;
+    line-height: 1.6;
+  }
+  #controls-help kbd {
+    background: rgba(255,255,255,0.1);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 10px;
+  }
+
+  /* Planet label */
+  .planet-label {
+    position: absolute;
+    color: #fff;
+    font-size: 11px;
+    pointer-events: none;
+    text-shadow: 0 0 6px #000, 0 0 12px #000;
+    white-space: nowrap;
+    z-index: 15;
+  }
+
+  /* Play button */
+  #play-btn {
+    position: absolute;
+    bottom: 25px;
+    left: calc(10% - 20px);
+    width: 36px; height: 36px;
+    background: rgba(0,229,255,0.2);
+    border: 1px solid #00e5ff;
+    border-radius: 50%;
+    color: #00e5ff;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+  }
+  #play-btn:hover { background: rgba(0,229,255,0.4); }
+
+  /* Loading */
+  #loading {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    flex-direction: column;
+    gap: 20px;
+  }
+  #loading .spinner {
+    width: 50px; height: 50px;
+    border: 3px solid rgba(0,229,255,0.2);
+    border-top: 3px solid #00e5ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loading .text { color: #00e5ff; font-size: 16px; letter-spacing: 2px; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="text">INITIALIZING COLONIZER AI SIMULATOR</div>
+</div>
+
+<div id="canvas-container"></div>
+
+<div id="hud">
+  <div id="title-bar">
+    <h1>Colonizer AI Simulator</h1>
+    <div class="subtitle">Sol System — Alien Colonization Assessment</div>
+  </div>
+
+  <div id="info-panel">
+    <h2>System Overview</h2>
+    <div id="info-content">Loading...</div>
+  </div>
+
+  <div id="controls-help">
+    <kbd>Left Click + Drag</kbd> Rotate<br>
+    <kbd>Scroll</kbd> Zoom<br>
+    <kbd>Right Click + Drag</kbd> Pan<br>
+    <kbd>Click Planet</kbd> Select<br>
+    <kbd>Space</kbd> Play/Pause
+  </div>
+
+  <button id="play-btn" title="Play/Pause">▶</button>
+
+  <div id="timeline-bar">
+    <div id="timeline-label">
+      <span id="phase-name">Phase 1: Reconnaissance</span>
+      <span id="phase-year">Year 0</span>
+    </div>
+    <input type="range" id="timeline-slider" min="0" max="1000" value="0">
+    <div id="timeline-phases"></div>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// =============================================================================
+// Solar System Data (hardcoded — matches solar_system_data.py)
+// =============================================================================
+
+const SOLAR_SYSTEM = {
+  star: {
+    name: "Sol",
+    spectral_class: "G",
+    luminosity: 1.0,
+    temperature: 5778,
+    mass: 1.0,
+    radius: 1.0,
+    color: 0xFFF4E0
+  },
+  planets: [
+    { name: "Mercury", sma: 0.387, ecc: 0.2056, radius: 0.383, mass: 0.055, temp: 440, color: 0xA0826D, moons: 0, rings: false, period: 0.241 },
+    { name: "Venus",   sma: 0.723, ecc: 0.0068, radius: 0.949, mass: 0.815, temp: 737, color: 0xE8CDA0, moons: 0, rings: false, period: 0.615 },
+    { name: "Earth",   sma: 1.0,   ecc: 0.0167, radius: 1.0,   mass: 1.0,   temp: 288, color: 0x4488CC, moons: 1, rings: false, period: 1.0 },
+    { name: "Mars",    sma: 1.524, ecc: 0.0934, radius: 0.532, mass: 0.107, temp: 210, color: 0xCC6633, moons: 2, rings: false, period: 1.881 },
+    { name: "Jupiter", sma: 5.203, ecc: 0.0489, radius: 11.21, mass: 317.8, temp: 165, color: 0xD4A96A, moons: 95, rings: true, period: 11.86 },
+    { name: "Saturn",  sma: 9.537, ecc: 0.0565, radius: 9.45,  mass: 95.16, temp: 134, color: 0xE8D5A0, moons: 146, rings: true, period: 29.46 },
+    { name: "Uranus",  sma: 19.19, ecc: 0.0457, radius: 4.01,  mass: 14.54, temp: 76,  color: 0x7EC8E3, moons: 28, rings: true, period: 84.01 },
+    { name: "Neptune", sma: 30.07, ecc: 0.0113, radius: 3.88,  mass: 17.15, temp: 72,  color: 0x3355BB, moons: 16, rings: true, period: 164.8 }
+  ]
+};
+
+// Default colonization plan (overridden by JSON if available)
+const DEFAULT_PLAN = {
+  planet_assessments: [
+    { name: "Mercury", suitability_score: 0.12, resources: { mineral_mining: 0.78, energy_generation: 0.90, fuel_extraction: 0.0 } },
+    { name: "Venus",   suitability_score: 0.18, resources: { atmospheric_harvesting: 0.85, energy_generation: 0.70, mineral_mining: 0.65 } },
+    { name: "Earth",   suitability_score: 0.92, resources: { water_extraction: 0.95, atmospheric_harvesting: 0.90, mineral_mining: 0.75, construction_materials: 0.80 } },
+    { name: "Mars",    suitability_score: 0.65, resources: { mineral_mining: 0.70, construction_materials: 0.60, water_extraction: 0.35 } },
+    { name: "Jupiter", suitability_score: 0.25, resources: { fuel_extraction: 0.95, atmospheric_harvesting: 0.92, energy_generation: 0.30 } },
+    { name: "Saturn",  suitability_score: 0.22, resources: { fuel_extraction: 0.90, atmospheric_harvesting: 0.88, water_extraction: 0.55 } },
+    { name: "Uranus",  suitability_score: 0.15, resources: { fuel_extraction: 0.75, atmospheric_harvesting: 0.60 } },
+    { name: "Neptune", suitability_score: 0.10, resources: { fuel_extraction: 0.70, atmospheric_harvesting: 0.55 } }
+  ],
+  colonization_timeline: [
+    { phase_name: "Reconnaissance",      start_year: 0,   duration_years: 5  },
+    { phase_name: "Orbital Insertion",    start_year: 5,   duration_years: 10 },
+    { phase_name: "Initial Landing",      start_year: 15,  duration_years: 15 },
+    { phase_name: "Base Establishment",   start_year: 30,  duration_years: 25 },
+    { phase_name: "Resource Extraction",  start_year: 55,  duration_years: 30 },
+    { phase_name: "Expansion",            start_year: 85,  duration_years: 35 },
+    { phase_name: "Terraforming",         start_year: 120, duration_years: 40 },
+    { phase_name: "Full Colonization",    start_year: 160, duration_years: 40 }
+  ],
+  colonization_priority_order: ["Earth", "Mars", "Jupiter", "Saturn", "Venus", "Uranus", "Mercury", "Neptune"]
+};
+
+// Try loading from generated plan
+let colonizationPlan = DEFAULT_PLAN;
+try {
+  const response = await fetch('colonization_plan.json');
+  if (response.ok) {
+    colonizationPlan = await response.json();
+    console.log("Loaded colonization plan from JSON");
+  }
+} catch (e) {
+  console.log("Using default plan (no JSON file found)");
+}
+
+// =============================================================================
+// Scene Setup
+// =============================================================================
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 2000);
+camera.position.set(25, 18, 30);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.minDistance = 3;
+controls.maxDistance = 200;
+controls.target.set(0, 0, 0);
+
+// =============================================================================
+// Star field background
+// =============================================================================
+
+function createStarField() {
+  const count = 5000;
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
+
+  for (let i = 0; i < count; i++) {
+    const r = 400 + Math.random() * 600;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    positions[i*3]     = r * Math.sin(phi) * Math.cos(theta);
+    positions[i*3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+    positions[i*3 + 2] = r * Math.cos(phi);
+
+    const temp = Math.random();
+    if (temp < 0.3) { colors[i*3] = 0.8; colors[i*3+1] = 0.85; colors[i*3+2] = 1.0; }
+    else if (temp < 0.7) { colors[i*3] = 1.0; colors[i*3+1] = 1.0; colors[i*3+2] = 0.95; }
+    else { colors[i*3] = 1.0; colors[i*3+1] = 0.85; colors[i*3+2] = 0.7; }
+
+    sizes[i] = 0.3 + Math.random() * 0.8;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+  const mat = new THREE.PointsMaterial({
+    size: 0.5,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.8,
+    sizeAttenuation: true,
+  });
+
+  return new THREE.Points(geo, mat);
+}
+scene.add(createStarField());
+
+// =============================================================================
+// Sun
+// =============================================================================
+
+function createSun() {
+  const group = new THREE.Group();
+
+  // Core sphere
+  const geo = new THREE.SphereGeometry(2, 64, 64);
+  const mat = new THREE.MeshBasicMaterial({ color: 0xFFE866 });
+  const mesh = new THREE.Mesh(geo, mat);
+  group.add(mesh);
+
+  // Glow layers
+  for (let i = 0; i < 3; i++) {
+    const glowGeo = new THREE.SphereGeometry(2.2 + i * 0.5, 32, 32);
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: 0xFFAA22,
+      transparent: true,
+      opacity: 0.08 - i * 0.02,
+      side: THREE.BackSide,
+    });
+    group.add(new THREE.Mesh(glowGeo, glowMat));
+  }
+
+  // Point light
+  const light = new THREE.PointLight(0xFFF4E0, 3, 500);
+  group.add(light);
+
+  // Ambient
+  scene.add(new THREE.AmbientLight(0x222244, 0.4));
+
+  return group;
+}
+const sun = createSun();
+scene.add(sun);
+
+// =============================================================================
+// Planets
+// =============================================================================
+
+const AU_SCALE = 4.0;  // 1 AU = 4 units in scene
+const PLANET_SIZE_SCALE = 0.08; // planet radii scaled down
+const MIN_PLANET_SIZE = 0.12;
+const MAX_PLANET_SIZE = 1.2;
+
+const planetObjects = [];
+const orbitLines = [];
+const labelElements = [];
+
+function createPlanet(planetData, index) {
+  const group = new THREE.Group();
+
+  // Planet size (logarithmic scaling for gas giants)
+  let size = Math.max(MIN_PLANET_SIZE,
+    Math.min(MAX_PLANET_SIZE, planetData.radius * PLANET_SIZE_SCALE));
+  if (planetData.radius > 4) {
+    size = MIN_PLANET_SIZE + (MAX_PLANET_SIZE - MIN_PLANET_SIZE) *
+      Math.log(planetData.radius) / Math.log(12);
+  }
+
+  // Planet sphere
+  const geo = new THREE.SphereGeometry(size, 32, 32);
+  const mat = new THREE.MeshStandardMaterial({
+    color: planetData.color,
+    roughness: 0.7,
+    metalness: 0.2,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  group.add(mesh);
+
+  // Atmosphere (slight glow for habitable planets)
+  const assessment = colonizationPlan.planet_assessments.find(a => a.name === planetData.name);
+  if (assessment && assessment.suitability_score > 0.5) {
+    const atmGeo = new THREE.SphereGeometry(size * 1.15, 32, 32);
+    const atmMat = new THREE.MeshBasicMaterial({
+      color: 0x44AAFF,
+      transparent: true,
+      opacity: 0.15,
+      side: THREE.BackSide,
+    });
+    group.add(new THREE.Mesh(atmGeo, atmMat));
+  }
+
+  // Rings (Saturn, Uranus, etc.)
+  if (planetData.rings && planetData.radius > 4) {
+    const ringGeo = new THREE.RingGeometry(size * 1.4, size * 2.2, 64);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: planetData.color,
+      transparent: true,
+      opacity: 0.4,
+      side: THREE.DoubleSide,
+    });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2.2;
+    group.add(ring);
+  }
+
+  // Store metadata
+  group.userData = {
+    planetData,
+    assessment,
+    orbitalRadius: planetData.sma * AU_SCALE,
+    orbitalPeriod: planetData.period,
+    angle: Math.random() * Math.PI * 2,
+    size,
+    index,
+  };
+
+  return group;
+}
+
+// Create orbit path
+function createOrbitPath(sma) {
+  const radius = sma * AU_SCALE;
+  const curve = new THREE.EllipseCurve(0, 0, radius, radius, 0, Math.PI * 2, false, 0);
+  const points = curve.getPoints(128);
+  const geo = new THREE.BufferGeometry().setFromPoints(
+    points.map(p => new THREE.Vector3(p.x, 0, p.y))
+  );
+  const mat = new THREE.LineBasicMaterial({
+    color: 0x334466,
+    transparent: true,
+    opacity: 0.3,
+  });
+  return new THREE.Line(geo, mat);
+}
+
+// Create all planets
+SOLAR_SYSTEM.planets.forEach((pd, i) => {
+  const planet = createPlanet(pd, i);
+  scene.add(planet);
+  planetObjects.push(planet);
+
+  const orbit = createOrbitPath(pd.sma);
+  scene.add(orbit);
+  orbitLines.push(orbit);
+
+  // HTML label
+  const label = document.createElement('div');
+  label.className = 'planet-label';
+  label.textContent = pd.name;
+  document.getElementById('hud').appendChild(label);
+  labelElements.push(label);
+});
+
+// =============================================================================
+// Colonization Visuals
+// =============================================================================
+
+const colonizationAssets = {
+  probes: [],
+  stations: [],
+  ships: [],
+  beams: [],
+  terraformEffects: [],
+};
+
+// Probe (small blinking dot)
+function createProbe(targetPlanet) {
+  const geo = new THREE.SphereGeometry(0.05, 8, 8);
+  const mat = new THREE.MeshBasicMaterial({ color: 0x00FF88 });
+  const probe = new THREE.Mesh(geo, mat);
+  probe.userData = {
+    target: targetPlanet,
+    progress: 0,
+    speed: 0.002 + Math.random() * 0.003,
+    startPos: new THREE.Vector3(0, 0, 0),
+  };
+  scene.add(probe);
+  colonizationAssets.probes.push(probe);
+  return probe;
+}
+
+// Orbital station (torus)
+function createStation(planetGroup) {
+  const size = planetGroup.userData.size;
+  const geo = new THREE.TorusGeometry(size * 1.8, size * 0.15, 8, 32);
+  const mat = new THREE.MeshStandardMaterial({
+    color: 0xAAAAAA,
+    metalness: 0.8,
+    roughness: 0.3,
+    emissive: 0x002244,
+    emissiveIntensity: 0.3,
+  });
+  const station = new THREE.Mesh(geo, mat);
+  station.rotation.x = Math.PI / 2;
+  station.visible = false;
+  planetGroup.add(station);
+  colonizationAssets.stations.push({ mesh: station, planet: planetGroup });
+  return station;
+}
+
+// Colony ship (elongated shape with engine glow)
+function createShip(fromPos, toPos) {
+  const group = new THREE.Group();
+
+  // Hull
+  const hullGeo = new THREE.ConeGeometry(0.06, 0.3, 6);
+  const hullMat = new THREE.MeshStandardMaterial({ color: 0xCCCCCC, metalness: 0.7 });
+  const hull = new THREE.Mesh(hullGeo, hullMat);
+  hull.rotation.x = Math.PI / 2;
+  group.add(hull);
+
+  // Engine glow
+  const engineGeo = new THREE.SphereGeometry(0.04, 8, 8);
+  const engineMat = new THREE.MeshBasicMaterial({ color: 0x00AAFF });
+  const engine = new THREE.Mesh(engineGeo, engineMat);
+  engine.position.z = 0.15;
+  group.add(engine);
+
+  group.userData = {
+    fromPos: fromPos.clone(),
+    toPos: toPos.clone(),
+    progress: 0,
+    speed: 0.001 + Math.random() * 0.002,
+  };
+
+  scene.add(group);
+  colonizationAssets.ships.push(group);
+  return group;
+}
+
+// Terraforming beam
+function createTerraformEffect(planetGroup) {
+  const size = planetGroup.userData.size;
+  const geo = new THREE.SphereGeometry(size * 2.5, 32, 32);
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0x00FF88,
+    transparent: true,
+    opacity: 0.0,
+    side: THREE.BackSide,
+  });
+  const effect = new THREE.Mesh(geo, mat);
+  effect.visible = false;
+  planetGroup.add(effect);
+  colonizationAssets.terraformEffects.push({ mesh: effect, planet: planetGroup });
+  return effect;
+}
+
+// Initialize colonization assets for top-priority planets
+const priorityPlanets = colonizationPlan.colonization_priority_order || [];
+planetObjects.forEach((pg) => {
+  createStation(pg);
+  createTerraformEffect(pg);
+});
+
+// =============================================================================
+// Timeline State
+// =============================================================================
+
+let timelineProgress = 0;    // 0 to 1
+let isPlaying = false;
+let playSpeed = 0.0003;
+let currentPhaseIndex = 0;
+let selectedPlanet = null;
+
+const timeline = colonizationPlan.colonization_timeline;
+const totalYears = timeline[timeline.length - 1].start_year + timeline[timeline.length - 1].duration_years;
+
+// Build phase segments
+const phasesContainer = document.getElementById('timeline-phases');
+const phaseColors = [
+  '#1a237e', '#0d47a1', '#006064', '#004d40',
+  '#1b5e20', '#827717', '#e65100', '#b71c1c'
+];
+
+timeline.forEach((phase, i) => {
+  const seg = document.createElement('div');
+  seg.className = 'phase-segment';
+  seg.style.background = phaseColors[i];
+  seg.style.flex = phase.duration_years;
+  seg.textContent = phase.phase_name;
+  seg.onclick = () => {
+    timelineProgress = phase.start_year / totalYears;
+    document.getElementById('timeline-slider').value = timelineProgress * 1000;
+    updateTimelineState();
+  };
+  phasesContainer.appendChild(seg);
+});
+
+function updateTimelineState() {
+  const currentYear = timelineProgress * totalYears;
+
+  // Find current phase
+  for (let i = timeline.length - 1; i >= 0; i--) {
+    if (currentYear >= timeline[i].start_year) {
+      currentPhaseIndex = i;
+      break;
+    }
+  }
+
+  // Update labels
+  document.getElementById('phase-name').textContent =
+    `Phase ${currentPhaseIndex + 1}: ${timeline[currentPhaseIndex].phase_name}`;
+  document.getElementById('phase-year').textContent = `Year ${Math.round(currentYear)}`;
+
+  // Update phase segment highlights
+  document.querySelectorAll('.phase-segment').forEach((seg, i) => {
+    seg.classList.toggle('active', i === currentPhaseIndex);
+  });
+
+  // Update colonization visuals based on phase
+  updateColonizationVisuals(currentPhaseIndex, timelineProgress);
+}
+
+function updateColonizationVisuals(phaseIndex, progress) {
+  const currentYear = progress * totalYears;
+
+  // Phase 0: Reconnaissance — send probes
+  if (phaseIndex >= 0) {
+    // Spawn probes if not enough
+    while (colonizationAssets.probes.length < Math.min(8, (phaseIndex + 1) * 2)) {
+      const targetIdx = colonizationAssets.probes.length % planetObjects.length;
+      createProbe(planetObjects[targetIdx]);
+    }
+  }
+
+  // Phase 1+: Orbital stations appear
+  colonizationAssets.stations.forEach(({ mesh, planet }) => {
+    const assessment = planet.userData.assessment;
+    if (!assessment) return;
+    const score = assessment.suitability_score;
+    // Stations appear for planets with suitability > 0.1, starting phase 1
+    if (phaseIndex >= 1 && score > 0.1) {
+      mesh.visible = true;
+      mesh.rotation.z += 0.01;
+    } else {
+      mesh.visible = false;
+    }
+  });
+
+  // Phase 2+: Colony ships
+  if (phaseIndex >= 2 && colonizationAssets.ships.length < (phaseIndex - 1) * 3) {
+    const topPlanets = priorityPlanets.slice(0, Math.min(3, phaseIndex));
+    topPlanets.forEach(name => {
+      const pg = planetObjects.find(p => p.userData.planetData.name === name);
+      if (pg) {
+        createShip(new THREE.Vector3(0, 0, 0), pg.position);
+      }
+    });
+  }
+
+  // Phase 6+: Terraforming effects
+  colonizationAssets.terraformEffects.forEach(({ mesh, planet }) => {
+    const assessment = planet.userData.assessment;
+    if (!assessment) return;
+    if (phaseIndex >= 6 && assessment.suitability_score > 0.3) {
+      mesh.visible = true;
+      mesh.material.opacity = 0.05 + 0.1 * Math.sin(Date.now() * 0.002);
+      mesh.material.color.setHSL(0.3 + 0.1 * Math.sin(Date.now() * 0.001), 0.8, 0.5);
+    } else {
+      mesh.visible = false;
+    }
+  });
+}
+
+// =============================================================================
+// Planet Selection & Info Panel
+// =============================================================================
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+function onMouseClick(event) {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const meshes = planetObjects.map(pg => pg.children[0]);
+  const intersects = raycaster.intersectObjects(meshes);
+
+  if (intersects.length > 0) {
+    const hitMesh = intersects[0].object;
+    const pg = hitMesh.parent;
+    selectedPlanet = pg;
+    updateInfoPanel(pg);
+
+    // Smoothly move camera toward planet
+    const targetPos = pg.position.clone();
+    const offset = new THREE.Vector3(3, 2, 3);
+    controls.target.lerp(targetPos, 0.5);
+  } else {
+    selectedPlanet = null;
+    showSystemOverview();
+  }
+}
+renderer.domElement.addEventListener('click', onMouseClick);
+
+function showSystemOverview() {
+  const panel = document.getElementById('info-content');
+  let html = '';
+
+  html += `<h3>⭐ ${SOLAR_SYSTEM.star.name}</h3>`;
+  html += `<div class="stat-row"><span class="stat-label">Spectral Class</span><span class="stat-value">${SOLAR_SYSTEM.star.spectral_class}2V</span></div>`;
+  html += `<div class="stat-row"><span class="stat-label">Luminosity</span><span class="stat-value">${SOLAR_SYSTEM.star.luminosity} L☉</span></div>`;
+  html += `<div class="stat-row"><span class="stat-label">Temperature</span><span class="stat-value">${SOLAR_SYSTEM.star.temperature} K</span></div>`;
+  html += `<div class="stat-row"><span class="stat-label">Planets</span><span class="stat-value">${SOLAR_SYSTEM.planets.length}</span></div>`;
+  html += '<br>';
+
+  html += '<h3>🏆 Priority Order</h3>';
+  const order = colonizationPlan.colonization_priority_order || [];
+  order.forEach((name, i) => {
+    const assess = (colonizationPlan.planet_assessments || []).find(a => a.name === name);
+    const score = assess ? assess.suitability_score : 0;
+    const gradeClass = score >= 0.8 ? 'grade-A' : score >= 0.6 ? 'grade-B' : score >= 0.4 ? 'grade-C' : score >= 0.2 ? 'grade-D' : 'grade-F';
+    html += `<div style="margin: 4px 0;">`;
+    html += `<span style="color:#4dd0e1;">${i+1}.</span> ${name} <span style="color:#888">(${(score*100).toFixed(0)}%)</span>`;
+    html += `<div class="score-bar"><div class="score-bar-fill ${gradeClass}" style="width:${score*100}%"></div></div>`;
+    html += `</div>`;
+  });
+
+  panel.innerHTML = html;
+}
+
+function updateInfoPanel(planetGroup) {
+  const pd = planetGroup.userData.planetData;
+  const assess = planetGroup.userData.assessment;
+  const panel = document.getElementById('info-content');
+
+  let html = `<h3>🪐 ${pd.name}</h3>`;
+
+  if (assess) {
+    const score = assess.suitability_score;
+    const gradeClass = score >= 0.8 ? 'grade-A' : score >= 0.6 ? 'grade-B' : score >= 0.4 ? 'grade-C' : score >= 0.2 ? 'grade-D' : 'grade-F';
+    const gradeText = score >= 0.8 ? 'Excellent' : score >= 0.6 ? 'Good' : score >= 0.4 ? 'Moderate' : score >= 0.2 ? 'Poor' : 'Unsuitable';
+    html += `<div style="margin: 6px 0; font-size: 18px; color: #00e5ff;">${(score*100).toFixed(0)}% — ${gradeText}</div>`;
+    html += `<div class="score-bar" style="height:8px"><div class="score-bar-fill ${gradeClass}" style="width:${score*100}%"></div></div>`;
+  }
+
+  html += '<h3>Orbital Parameters</h3>';
+  html += `<div class="stat-row"><span class="stat-label">Semi-major axis</span><span class="stat-value">${pd.sma} AU</span></div>`;
+  html += `<div class="stat-row"><span class="stat-label">Eccentricity</span><span class="stat-value">${pd.ecc}</span></div>`;
+  html += `<div class="stat-row"><span class="stat-label">Orbital period</span><span class="stat-value">${pd.period} yr</span></div>`;
+
+  html += '<h3>Physical Properties</h3>';
+  html += `<div class="stat-row"><span class="stat-label">Mass</span><span class="stat-value">${pd.mass} M⊕</span></div>`;
+  html += `<div class="stat-row"><span class="stat-label">Radius</span><span class="stat-value">${pd.radius} R⊕</span></div>`;
+  html += `<div class="stat-row"><span class="stat-label">Surface Temp</span><span class="stat-value">${pd.temp} K</span></div>`;
+  html += `<div class="stat-row"><span class="stat-label">Moons</span><span class="stat-value">${pd.moons}</span></div>`;
+
+  if (assess && assess.resources) {
+    html += '<h3>Resources</h3>';
+    for (const [key, val] of Object.entries(assess.resources)) {
+      const label = key.replace(/_/g, ' ');
+      const pct = (val * 100).toFixed(0);
+      html += `<div style="margin: 3px 0;">`;
+      html += `<span class="stat-label">${label}</span>`;
+      html += `<div class="score-bar"><div class="score-bar-fill grade-B" style="width:${pct}%"></div></div>`;
+      html += `</div>`;
+    }
+  }
+
+  panel.innerHTML = html;
+}
+
+// =============================================================================
+// Controls
+// =============================================================================
+
+const slider = document.getElementById('timeline-slider');
+slider.addEventListener('input', () => {
+  timelineProgress = slider.value / 1000;
+  updateTimelineState();
+});
+
+const playBtn = document.getElementById('play-btn');
+playBtn.addEventListener('click', () => {
+  isPlaying = !isPlaying;
+  playBtn.textContent = isPlaying ? '⏸' : '▶';
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    isPlaying = !isPlaying;
+    playBtn.textContent = isPlaying ? '⏸' : '▶';
+  }
+});
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// =============================================================================
+// Animation Loop
+// =============================================================================
+
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const delta = clock.getDelta();
+  const time = clock.getElapsedTime();
+
+  // Auto-play timeline
+  if (isPlaying) {
+    timelineProgress += playSpeed;
+    if (timelineProgress > 1) { timelineProgress = 0; }
+    slider.value = timelineProgress * 1000;
+    updateTimelineState();
+  }
+
+  // Orbit planets
+  planetObjects.forEach((pg, i) => {
+    const ud = pg.userData;
+    ud.angle += (delta * 0.3) / ud.orbitalPeriod;
+    const r = ud.orbitalRadius;
+    pg.position.x = r * Math.cos(ud.angle);
+    pg.position.z = r * Math.sin(ud.angle);
+    pg.position.y = 0;
+
+    // Slight axial rotation
+    pg.children[0].rotation.y += delta * 0.5;
+  });
+
+  // Animate probes
+  colonizationAssets.probes.forEach(probe => {
+    const ud = probe.userData;
+    ud.progress += ud.speed;
+    if (ud.progress > 1) ud.progress = 0;
+
+    const targetPos = ud.target.position;
+    probe.position.lerpVectors(ud.startPos, targetPos, ud.progress);
+    probe.position.y = Math.sin(ud.progress * Math.PI) * 2;
+
+    // Blink
+    probe.material.opacity = 0.5 + 0.5 * Math.sin(time * 10);
+    probe.material.transparent = true;
+  });
+
+  // Animate ships
+  colonizationAssets.ships.forEach(ship => {
+    const ud = ship.userData;
+    ud.progress += ud.speed;
+    if (ud.progress > 1) ud.progress = 0;
+
+    // Find current target position (planet moves)
+    const targetName = priorityPlanets[colonizationAssets.ships.indexOf(ship) % priorityPlanets.length];
+    const targetPG = planetObjects.find(p => p.userData.planetData.name === targetName);
+    if (targetPG) {
+      ud.toPos.copy(targetPG.position);
+    }
+
+    ship.position.lerpVectors(ud.fromPos, ud.toPos, ud.progress);
+    ship.position.y = Math.sin(ud.progress * Math.PI) * 3;
+
+    // Orient ship toward target
+    ship.lookAt(ud.toPos);
+  });
+
+  // Animate orbital stations
+  colonizationAssets.stations.forEach(({ mesh }) => {
+    if (mesh.visible) {
+      mesh.rotation.z += delta * 0.5;
+    }
+  });
+
+  // Update planet labels (project 3D → 2D)
+  planetObjects.forEach((pg, i) => {
+    const pos = pg.position.clone();
+    pos.y += pg.userData.size + 0.3;
+    pos.project(camera);
+
+    const x = (pos.x * 0.5 + 0.5) * window.innerWidth;
+    const y = (-pos.y * 0.5 + 0.5) * window.innerHeight;
+
+    const label = labelElements[i];
+    label.style.left = `${x}px`;
+    label.style.top = `${y}px`;
+    label.style.transform = 'translate(-50%, -100%)';
+
+    // Show/hide based on distance
+    const dist = camera.position.distanceTo(pg.position);
+    label.style.opacity = dist < 80 ? '1' : '0';
+  });
+
+  // Sun pulsation
+  sun.children[0].scale.setScalar(1 + 0.02 * Math.sin(time * 2));
+
+  // Highlight selected planet
+  if (selectedPlanet) {
+    const mesh = selectedPlanet.children[0];
+    mesh.material.emissive = new THREE.Color(0x004466);
+    mesh.material.emissiveIntensity = 0.3 + 0.2 * Math.sin(time * 3);
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+// =============================================================================
+// Init
+// =============================================================================
+
+showSystemOverview();
+updateTimelineState();
+
+// Remove loading screen
+setTimeout(() => {
+  document.getElementById('loading').style.display = 'none';
+  animate();
+}, 1500);
+
+</script>
+</body>
+</html>
